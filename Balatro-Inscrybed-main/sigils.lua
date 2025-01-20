@@ -107,21 +107,29 @@ SMODS.Seal {
     atlas = 'test_atlas',
     pos = {x=0, y=0},
     loc_vars = function(self, info_queue, card)
-        return { vars = { G.GAME.probabilities.normal or 1, self.config.odds } }
-        end,
-        calculate = function(self, card, context)
-            if context.discard then
-                G.E_MANAGER:add_event(Event({
-                    trigger = 'before',
-                    delay = 0.0,
-                    message = "gift!",
-                    func = (function()
-                            local card = create_card('Joker',G.joker_main)
-                            --card:add_to_deck()
-                            G.jokers:emplace(card)
-                        return true
-                    end)
-                }))
+    return { vars = {} }
+    end,
+    calculate = function(self, card, context)
+        if context.pre_discard then
+            G.E_MANAGER:add_event(Event({
+                func = function() 
+                    if #G.jokers.cards < G.jokers.config.card_limit then 
+                        local card = create_card('Joker', G.jokers, nil, nil, nil, nil, nil, 'gifter')
+                        card:add_to_deck()
+                        G.jokers:emplace(card)
+                        card:start_materialize()
+                        G.GAME.joker_buffer = 0
+
+                        return{
+                            message = {
+                                "gift!"
+                            }
+                        }
+                    end
+             
+            return true
+            end
+            }))
         end
     end
 }
