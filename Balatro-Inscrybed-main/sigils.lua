@@ -14,6 +14,62 @@ SMODS.Atlas {
     py = 180
 }
 
+SMODS.Sigils = {}
+    SMODS.Sigil = SMODS.GameObject:extend {
+        obj_table = SMODS.Sigils,
+        obj_buffer = {},
+        set = 'Sigil',
+        required_params = {
+            'key',
+        },
+        rate = 0.3,
+        atlas = 'sigils',
+        pos = { x = 0, y = 0 },
+        badge_colour = HEX 'FFFFFF',
+        default_compat = true,
+        compat_exceptions = {},
+        sets = { Joker = true },
+        needs_enable_flag = true,
+        process_loc_text = function(self)
+            SMODS.process_loc_text(G.localization.descriptions.Other, self.key, self.loc_txt)
+            SMODS.process_loc_text(G.localization.misc.labels, self.key, self.loc_txt, 'label')
+        end,
+        register = function(self)
+            if self.registered then
+                sendWarnMessage(('Detected duplicate register call on object %s'):format(self.key), self.set)
+                return
+            end
+            SMODS.Sigil.super.register(self)
+            self.order = #self.obj_buffer
+        end,
+        inject = function(self)
+            self.sigil_sprite = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[self.atlas], self.pos)
+            G.shared_sigils[self.key] = self.sigil_sprite
+        end,
+        -- relocating sigil checks to here, so if the sigil has different checks than default
+        -- they can be handled without hooking/injecting into create_card
+        -- or handling it in apply
+        -- TODO: rename
+        should_apply = function(self, card, center, area, bypass_roll)
+            if 
+                ( not self.sets or self.sets[center.set or {}]) and
+                (
+                    center[self.key..'_compat'] or -- explicit marker
+                    (self.default_compat and not self.compat_exceptions[center.key]) or -- default yes with no exception
+                    (not self.default_compat and self.compat_exceptions[center.key]) -- default no with exception
+                ) and 
+                (not self.needs_enable_flag or G.GAME.modifiers['enable_'..self.key])
+            then
+                self.last_roll = pseudorandom((area == G.pack_cards and 'packssj' or 'shopssj')..self.key..G.GAME.round_resets.ante)
+                return (bypass_roll ~= nil) and bypass_roll or self.last_roll > (1-self.rate)
+            end
+        end,
+        apply = function(self, card, val)
+            card.ability[self.key] = val
+        end
+    }
+
+
 --this is the template for all the other sigils, this was made BEFORE it was changed into it's own object, and is still a seal
 
 --SMODS.Seal { 
@@ -32,9 +88,37 @@ SMODS.Atlas {
 --    atlas = 'sigils',
 --}
 
+function Card:calculate_sigil(context, key)
+    local sigil = SMODS.Sigils[key]
+    if self.ability[key] and type(sigil.calculate) == 'function' then
+        local o = sigil:calculate(self, context)
+        if o then
+            if not o.card then o.card = self end
+            return o
+        end
+    end
+end
 
+G.FUNCS.your_collection_sigil = function(e)
+    G.SETTINGS.paused = true
+    G.FUNCS.overlay_menu{
+      definition = create_UIBox_your_collection_sigils(),
+    }
+end
 
-
+create_UIBox_your_collection_sigils = function()
+    return SMODS.card_collection_UIBox(SMODS.Sigils, {5,5}, {
+        snap_back = true,
+        hide_single_page = true,
+        collapse_single_page = true,
+        center = 'c_base',
+        h_mod = 1.03,
+        back_func = 'your_collection_other_gameobjects',
+        modify_card = function(card, center)
+            center:apply(card, true)
+        end,
+    })
+end
 
 --fecundity 
 SMODS.Seal { 
