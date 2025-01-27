@@ -54,13 +54,13 @@ SMODS.Seal {
     atlas = 'sigils',
     pos = {x=0, y=0},
     loc_vars = function(self, info_queue, card)
-        return { vars = { G.GAME.probabilities.normal or 1, self.config.odds } }
+        return { vars = { G.GAME.probabilities.normal or 1, self.config.odds } }--might be center.config.odds
         end,
         -- consider changing the functionality to only add to hand and not to deck permenantly
         calculate = function(self, card, context)
             if context.cardarea == G.play and context.main_scoring then
                 
-                if pseudorandom('rat_test') < G.GAME.probabilities.normal/4 then
+                if pseudorandom('rat_test') < G.GAME.probabilities.normal/self.config.odds then -- tell me if this breaks because why make it hard coded? -smg9000
 
                --this code is just stolen from DNA
                  local card = copy_card(card, nil, nil, G.playing_card)
