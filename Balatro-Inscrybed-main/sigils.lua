@@ -18,6 +18,7 @@ SMODS.Sigils = {}
     SMODS.Sigil = SMODS.GameObject:extend {
         obj_table = SMODS.Sigils,
         obj_buffer = {},
+        rng_buffer = {},
         set = 'Sigil',
         required_params = {
             'key',
@@ -30,6 +31,14 @@ SMODS.Sigils = {}
         compat_exceptions = {},
         sets = { Joker = true },
         needs_enable_flag = true,
+        inject = function(self)
+            G.P_SEALS[self.key] = self
+            self.sigil_sprite = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[self.atlas], self.pos)
+            G.shared_sigils[self.key] = self.sigil_sprite
+            self.badge_to_key[self.key:lower() .. '_sigil'] = self.key
+            SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
+            self.rng_buffer[#self.rng_buffer + 1] = self.key
+        end,
         process_loc_text = function(self)
             SMODS.process_loc_text(G.localization.descriptions.Other, self.key, self.loc_txt)
             SMODS.process_loc_text(G.localization.misc.labels, self.key, self.loc_txt, 'label')
@@ -43,8 +52,7 @@ SMODS.Sigils = {}
             self.order = #self.obj_buffer
         end,
         inject = function(self)
-            self.sigil_sprite = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[self.atlas], self.pos)
-            G.shared_sigils[self.key] = self.sigil_sprite
+            
         end,
         -- relocating sigil checks to here, so if the sigil has different checks than default
         -- they can be handled without hooking/injecting into create_card
