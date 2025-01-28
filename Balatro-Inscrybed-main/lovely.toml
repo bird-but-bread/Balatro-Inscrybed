@@ -6,46 +6,9 @@ priority = 0
 [[patches]]
 [patches.pattern]
 target = 'game.lua'
-pattern = '''chips_text = '0','''
-position = 'after'
-payload = '''crafts = {},
-craftr = {
-	dirt = 0,
-	coal = 0,
-	iron = 0,
-	gold = 0,
-	copper = 0,
-	diamond = 0,
-	emerald = 0,
-	netherite = 0,
-	lapis = 0,
-	redstone = 0,
-	quartz = 0,
-	logs = 0,
-	planks = 0,
-	sticks = 0,
-	m = 0,
-	},
-
-'''
-match_indent = true
-
-
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''(_c.set == 'Joker' and G.C.RARITY[_c.rarity]) or'''
-position = 'after'
-payload = '''(_c.set == 'Craft' and G.C.YELLOW) or'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'game.lua'
 pattern = '''Stake = {},'''
 position = 'after'
-payload = '''Craft = {},'''
+payload = '''Sigil = {},'''
 match_indent = true
 
 
@@ -54,95 +17,30 @@ match_indent = true
 target = 'functions/misc_functions.lua'
 pattern = '''total = {tally = 0, of = 0},'''
 position = 'before'
-payload = '''crafts = {tally = 0, of = 0},
+payload = '''sigils = {tally = 0, of = 0},
 '''
 match_indent = true
 
 
-[[patches]]
-[patches.pattern]
-target = 'game.lua'
-pattern = '''Jimbo:add_speech_bubble('lq_'..math.random(1,10), nil, {quip = true})'''
-position = 'at'
-payload = '''if G.GAME.blind.name == "The Creeper" then
-Jimbo:add_speech_bubble("aww_man", nil, {quip = true})
-else
-Jimbo:add_speech_bubble('lq_'..math.random(1,10), nil, {quip = true})
-end
 
-
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'blind.lua'
-pattern = '''function Blind:load(blindTable)'''
-position = 'after'
-payload = '''self.config.creepertiming = blindTable.creepertimer or 0
-
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'blind.lua'
-pattern = '''return blindTable'''
-position = 'before'
-payload = '''blindTable.creepertimer = self.config.creepertiming or 0
-'''
-match_indent = true
 
 [[patches]]
 [patches.pattern]
 target = 'game.lua'
 pattern = '''self.P_LOCKED = {}'''
 position = 'after'
-payload = '''self.P_CRAFTS = {
+payload = '''self.P_SIGILS = {
 }'''	
 match_indent = true
 
-[[patches]]
-[patches.pattern]
-target = 'game.lua'
-pattern = '''local meta = STR_UNPACK(get_compressed(G.SETTINGS.profile..'/'..'meta.jkr') or 'return {}')'''
-position = 'after'
-payload = '''for k, v in pairs(G.P_CRAFTS) do
-    SMODS._save_d_u(v)
-    v._discovered_unlocked_overwritten = true
-end'''
-match_indent = true
 
 [[patches]]
 [patches.pattern]
 target = 'game.lua'
 pattern = '''table.sort(self.P_CENTER_POOLS["Seal"], function (a, b) return a.order < b.order end)'''
 position = 'after'
-payload = '''table.sort(self.P_CENTER_POOLS["Craft"], function (a, b) return a.order < b.order end)'''
+payload = '''table.sort(self.P_CENTER_POOLS["Sigil"], function (a, b) return a.order < b.order end)'''
 match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''elseif _c.set == 'Joker' then'''
-position = 'before'
-payload = '''elseif _c.set == 'Craft' then
-    if card and card.area and card.area.config.craft_table and card.config.center and not G.GAME.crafts[card.config.center.key] then
-        localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
-    end
-    if specific_vars and specific_vars.sticker then info_queue[#info_queue+1] = {key = string.lower(specific_vars.sticker)..'_sticker', set = 'Other'} end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/button_callbacks.lua'
-pattern = '''elseif card.ability.set == 'Voucher' then'''
-position = 'before'
-payload = '''elseif card.ability.set == 'Craft' then
-    craft_joker(card)
-    G.GAME.crafts[card.key] = true'''
-match_indent = true
-
 
 
 [[patches]]
@@ -150,7 +48,7 @@ match_indent = true
 target = 'game.lua'
 pattern = '''for k, v in pairs(self.P_STAKES) do'''
 position = 'before'
-payload = '''for k, v in pairs(self.P_CRAFTS) do
+payload = '''for k, v in pairs(self.P_SIGILS) do
     v.key = k
     if not v.wip and not v.demo then 
         if TESTHELPER_unlocks then v.discovered = true; v.alerted = true  end --REMOVE THIS
@@ -165,7 +63,7 @@ payload = '''for k, v in pairs(self.P_CRAFTS) do
         elseif v.discovered then
             v.alerted = false
         end
-        table.insert(self.P_CENTER_POOLS['Craft'], v)
+        table.insert(self.P_CENTER_POOLS['Sigil'], v)
     end
 end'''
 match_indent = true
@@ -175,7 +73,7 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = '''for k, v in pairs(G.P_CENTERS) do'''
 position = 'before'
-payload = '''for k, v in pairs(G.P_CRAFTS) do
+payload = '''for k, v in pairs(G.P_SIGILS) do
     if not v.demo and not v.wip then 
         v.alerted = true
         v.discovered = true
@@ -189,141 +87,9 @@ match_indent = true
 target = 'game.lua'
 pattern = '''G.ARGS.save_progress.PROFILE = G.PROFILES[G.SETTINGS.profile]'''
 position = 'after'
-payload = '''for k, v in pairs(self.P_CRAFTS) do
+payload = '''for k, v in pairs(self.P_SIGILS) do
     G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
 end'''
 match_indent = true
 
-
-
-
-[[patches]]
-[patches.pattern]
-target = 'functions/UI_definitions.lua'
-pattern = '''G.GAME.stake > 1 and {'''
-position = 'before'
-payload = '''{
-    label = localize('b_crafting'),
-    tab_definition_function = G.UIDEF.learned_craft,
-},'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/UI_definitions.lua'
-pattern = '''G.GAME.stake > 1 and {'''
-position = 'before'
-payload = '''{
-    label = localize('b_resources'),
-    tab_definition_function = G.UIDEF.resource_list,
-},'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/UI_definitions.lua'
-pattern = '''elseif card.area and card.area == G.pack_cards then'''
-position = 'before'
-payload = '''elseif card and card.area and card.area.config.craft_table then
-    return {
-      n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-        {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, button = 'craft_joker', func = 'can_craft'}, nodes={
-          {n=G.UIT.T, config={text = localize('b_craft'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-        }},
-    }}'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''if self.ability.name == 'Invisible Joker' and (self.config.center.discovered or self.bypass_discovery_center) then'''
-position = 'before'
-payload = '''if self.ability.enchanted then
-    if self:should_draw_base_shader() then
-        self.children.center:draw_shader('mc_enchant', nil, self.ARGS.send_to_shader)
-    end
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''if main_end then'''
-position = 'before'
-payload = '''if card and card.ability.enchant then
-    for i, j in pairs(card.ability.enchant) do
-        localize{type = 'other', key = "enchant_" .. i, nodes = desc_nodes, vars = {j}}
-        info_queue[#info_queue + 1] = {set = "Other", key = "tooltip_" .. i, vars = enchants[i].loc_vars(j)}
-    end
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''local edition = card:get_edition(context)'''
-position = 'before'
-payload = '''local enchant = card:get_enchant(context)
-if enchant then 
-    ret.enchant = enchant
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''jokers = card:get_edition(context)'''
-position = 'after'
-payload = '''local enchant = card:get_enchant(context)
-if enchant then 
-    ret.enchant = enchant
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''local edition_effects = eval_card(_card, {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, edition = true})'''
-position = 'after'
-payload = '''if edition_effects.enchant then
-    if edition_effects.enchant.mult_mod then
-        mult = mod_mult(mult + edition_effects.enchant.mult_mod)
-        update_hand_text({delay = 0}, {mult = mult})
-        card_eval_status_text(_card, 'jokers', nil, percent, nil, {
-            message = localize{type='variable',key='a_mult',vars={edition_effects.enchant.mult_mod}},
-            mult_mod =  edition_effects.enchant.mult_mod,
-            colour = G.C.PURPLE,
-            edition =true})
-    end
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''if effects[ii].edition then'''
-position = 'before'
-payload = '''if effects[ii].enchant then
-    hand_chips = mod_chips(hand_chips + (effects[ii].enchant.chip_mod or 0))
-    mult = mult + (effects[ii].enchant.mult_mod or 0)
-    mult = mod_mult(mult*(effects[ii].enchant.x_mult_mod or 1))
-    update_hand_text({delay = 0}, {
-        chips = effects[ii].enchant.chip_mod and hand_chips or nil,
-        mult = (effects[ii].enchant.mult_mod or effects[ii].enchant.x_mult_mod) and mult or nil,
-    })
-    card_eval_status_text(scoring_hand[i], 'extra', nil, percent, nil, {
-        message = (effects[ii].enchant.chip_mod and localize{type='variable',key='a_chips',vars={effects[ii].enchant.chip_mod}}) or
-                (effects[ii].enchant.mult_mod and localize{type='variable',key='a_mult',vars={effects[ii].enchant.mult_mod}}) or
-                (effects[ii].enchant.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects[ii].enchant.x_mult_mod}}),
-        chip_mod =  effects[ii].enchant.chip_mod,
-        mult_mod =  effects[ii].enchant.mult_mod,
-        x_mult_mod =  effects[ii].enchant.x_mult_mod,
-        colour = G.C.PURPLE,
-        edition =true})
-end
-'''
-match_indent = true
 
