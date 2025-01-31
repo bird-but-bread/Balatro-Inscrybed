@@ -134,8 +134,39 @@ SMODS.Seal {
     end
 }
 
-
-
+--Overclocked
+SMODS.Seal { 
+    name = "Overclocked",
+    key = "overc",
+    badge_colour = HEX("9fff80"),
+    config = { x_mult = 2, odds = 1 },
+    loc_txt = {
+        label = "Sigil",
+        name = "Overclocked",
+        text = {
+            "{X:mult,C:white} X#1# {} Mult.", 
+            "If a card bearing this sigil is played and",
+            "doesn't win, {C:green}#2# in #3#{} chance it breaks.",
+        },
+    },
+    loc_vars = function(self, info_queue)
+        return { vars = { self.config.x_mult, G.GAME.probabilities.normal or 1, self.config.odds} }
+    end,
+    atlas = 'sigils',
+    pos = {x=7, y=2},
+    calculate = function(self, card, context)
+        if context.main_scoring and context.cardarea == G.play then
+            return {
+                x_mult = self.config.x_mult,
+            }
+        end
+        if context.destroying_card and (hand_chips * mult) + G.GAME.chips < G.GAME.blind.chips then 
+            if pseudorandom('overclocked') < G.GAME.probabilities.normal / self.config.odds then
+                return { remove = true }
+            end
+        end
+    end,
+}
 
 ----------------------------------------------
 ------------MOD CODE END----------------------
