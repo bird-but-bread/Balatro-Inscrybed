@@ -10,8 +10,8 @@
 SMODS.Atlas {
     key = "sigils",
     path = "SigilAtlas.png",
-    px = 134,
-    py = 180
+    px = 71,
+    py = 95
 }
 
 --this is the template for all the other sigils, this was made BEFORE it was changed into it's own object, and is still a seal
@@ -52,7 +52,7 @@ SMODS.Seal {
         },
     },
     atlas = 'sigils',
-    pos = {x=0, y=0},
+    pos = {x=8, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = { G.GAME.probabilities.normal or 1, self.config.odds } }--might be center.config.odds
         end,
@@ -104,13 +104,13 @@ SMODS.Seal {
             "Create a random joker",
         },
     },
-    atlas = 'test_atlas',
-    pos = {x=0, y=0},
+    atlas = 'sigils',
+    pos = {x=4, y=3},
     loc_vars = function(self, info_queue, card)
     return { vars = {} }
     end,
     calculate = function(self, card, context)
-        if context.pre_discard then
+        if context.discard then
             G.E_MANAGER:add_event(Event({
                 func = function() 
                     if #G.jokers.cards < G.jokers.config.card_limit then 
