@@ -139,7 +139,7 @@ SMODS.Seal {
     name = "Overclocked",
     key = "overc",
     badge_colour = HEX("9fff80"),
-    config = { x_mult = 2, odds = 1 },
+    config = { x_mult = 2, odds = 2 },
     loc_txt = {
         label = "Sigil",
         name = "Overclocked",
