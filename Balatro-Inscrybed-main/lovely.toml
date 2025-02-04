@@ -75,3 +75,15 @@ payload = '''for k, v in pairs(self.P_SIGILS) do
     G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
 end'''
 match_indent = true
+
+
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''self.sticker_map = {'''
+position = 'before'
+payload = '''self.shared_sigils = {
+    }'''
+match_indent = true
+
