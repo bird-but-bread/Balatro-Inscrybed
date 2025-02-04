@@ -97,6 +97,42 @@ SMODS.Sigils = {}
 --    atlas = 'sigils',
 --}
 
+function Card:set_sigil(_sigil, silent, immediate)
+    self.sigil = nil
+    if _sigil then
+        self.sigil = _sigil
+        if not silent then 
+        G.CONTROLLER.locks.sigil = true
+            if immediate then 
+                self:juice_up(0.3, 0.3)
+                play_sound('gold_seal', 1.2, 0.4)
+                G.CONTROLLER.locks.sigil = false
+            else
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.3,
+                    func = function()
+                        self:juice_up(0.3, 0.3)
+                        play_sound('gold_seal', 1.2, 0.4)
+                    return true
+                    end
+                }))
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.15,
+                    func = function()
+                        G.CONTROLLER.locks.sigil = false
+                    return true
+                    end
+                }))
+            end
+        end
+    end
+    self:set_cost()
+end
+
+
+
 function Card:calculate_sigil(context, key)
     local sigil = SMODS.Sigils[key]
     if self.ability[key] and type(sigil.calculate) == 'function' then
@@ -119,7 +155,7 @@ end
 G.FUNCS.your_collection_sigil = function(e)
     G.SETTINGS.paused = true
     G.FUNCS.overlay_menu{
-      definition = create_UIBox_your_collection_sigils(),
+      definition = create_UIBox_your_collection_sigil(),
     }
 end
 
