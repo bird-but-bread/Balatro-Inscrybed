@@ -16,71 +16,72 @@ SMODS.Atlas {
 
 SMODS.Sigils = {}
     SMODS.Sigil = SMODS.GameObject:extend {
-        obj_table = SMODS.Sigils,
+               obj_table = SMODS.Sigils,
         obj_buffer = {},
         rng_buffer = {},
+        badge_to_key = {},
         set = 'Sigil',
+        atlas = 'centers',
+        pos = { x = 0, y = 0 },
+        discovered = false,
+        badge_colour = HEX('FFFFFF'),
         required_params = {
             'key',
+            'pos',
         },
-        rate = 0.3,
-        atlas = 'sigils',
-        pos = { x = 0, y = 0 },
-        badge_colour = HEX 'FFFFFF',
-        default_compat = true,
-        compat_exceptions = {},
-        sets = { Joker = true },
-        needs_enable_flag = true,
         inject = function(self)
-            G.P_SEALS[self.key] = self
-            self.sigil_sprite = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[self.atlas], self.pos)
-            G.shared_sigils[self.key] = self.sigil_sprite
+            G.P_SIGILS[self.key] = self
+            G.shared_sigils[self.key] = Sprite(0, 0, G.CARD_W, G.CARD_H,
+                G.ASSET_ATLAS[self.atlas] or G.ASSET_ATLAS['centers'], self.pos)
             self.badge_to_key[self.key:lower() .. '_sigil'] = self.key
             SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
             self.rng_buffer[#self.rng_buffer + 1] = self.key
         end,
         process_loc_text = function(self)
-            SMODS.process_loc_text(G.localization.descriptions.Other, self.key, self.loc_txt)
-            SMODS.process_loc_text(G.localization.misc.labels, self.key, self.loc_txt, 'label')
+            SMODS.process_loc_text(G.localization.descriptions.Other, self.key:lower() .. '_sigil', self.loc_txt)
+            SMODS.process_loc_text(G.localization.misc.labels, self.key:lower() .. '_sigil', self.loc_txt, 'label')
         end,
-        register = function(self)
-            if self.registered then
-                sendWarnMessage(('Detected duplicate register call on object %s'):format(self.key), self.set)
-                return
+        get_obj = function(self, key) return G.P_SIGILS[key] end,
+        generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
+            local target = {
+                type = 'other',
+                set = 'Other',
+                key = self.key:lower()..'_sigil',
+                nodes = desc_nodes,
+                vars = specific_vars or {},
+            }
+            local res = {}
+            if self.loc_vars and type(self.loc_vars) == 'function' then
+                res = self:loc_vars(info_queue, card) or {}
+                target.vars = res.vars or target.vars
+                target.key = res.key or target.key
+                if res.set then
+                    target.type = 'descriptions'
+                    target.set = res.set
+                end
+                target.scale = res.scale
+                target.text_colour = res.text_colour
             end
-            SMODS.Sigil.super.register(self)
-            self.order = #self.obj_buffer
-        end,
-        inject = function(self)
-            
-        end,
-        -- relocating sigil checks to here, so if the sigil has different checks than default
-        -- they can be handled without hooking/injecting into create_card
-        -- or handling it in apply
-        -- TODO: rename
-        should_apply = function(self, card, center, area, bypass_roll)
-            if 
-                ( not self.sets or self.sets[center.set or {}]) and
-                (
-                    center[self.key..'_compat'] or -- explicit marker
-                    (self.default_compat and not self.compat_exceptions[center.key]) or -- default yes with no exception
-                    (not self.default_compat and self.compat_exceptions[center.key]) -- default no with exception
-                ) and 
-                (not self.needs_enable_flag or G.GAME.modifiers['enable_'..self.key])
-            then
-                self.last_roll = pseudorandom((area == G.pack_cards and 'packssj' or 'shopssj')..self.key..G.GAME.round_resets.ante)
-                return (bypass_roll ~= nil) and bypass_roll or self.last_roll > (1-self.rate)
+            if desc_nodes == full_UI_table.main and not full_UI_table.name then
+                full_UI_table.name = localize { type = 'name', set = target.set, key = res.name_key or target.key, nodes = full_UI_table.name, vars = res.name_vars or target.vars or {} }
+            elseif desc_nodes ~= full_UI_table.main and not desc_nodes.name then
+                desc_nodes.name = localize{type = 'name_text', key = res.name_key or target.key, set = target.set }
             end
+            if res.main_start then
+                desc_nodes[#desc_nodes + 1] = res.main_start
+            end
+            localize(target)
+            if res.main_end then
+                desc_nodes[#desc_nodes + 1] = res.main_end
+            end
+            desc_nodes.background_colour = res.background_colour
         end,
-        apply = function(self, card, val)
-            card.ability[self.key] = val
-        end
     }
 
 
 --this is the template for all the other sigils, this was made BEFORE it was changed into it's own object, and is still a seal
 
---SMODS.Seal { 
+--SMODS.Sigil { 
 --    --creates the visuals and sets the local vars
 --    name = "replaece me ",
 --    key = "replace me",
@@ -107,6 +108,14 @@ function Card:calculate_sigil(context, key)
     end
 end
 
+SMODS.current_mod.custom_collection_tabs = function()
+	return { UIBox_button {
+        count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS["Sigil"]),
+        button = 'your_collection_sigil',
+        label = {"Sigils"}, minw = 5, id = 'your_collection_sigil'
+    }}
+end
+
 G.FUNCS.your_collection_sigil = function(e)
     G.SETTINGS.paused = true
     G.FUNCS.overlay_menu{
@@ -114,22 +123,22 @@ G.FUNCS.your_collection_sigil = function(e)
     }
 end
 
-create_UIBox_your_collection_sigils = function()
-    return SMODS.card_collection_UIBox(SMODS.Sigils, {5,5}, {
+create_UIBox_your_collection_sigil = function()
+    return SMODS.card_collection_UIBox(G.P_CENTER_POOLS.Sigil, {5,5}, {
         snap_back = true,
+        infotip = localize('ml_edition_seal_enhancement_explanation'),
         hide_single_page = true,
         collapse_single_page = true,
         center = 'c_base',
         h_mod = 1.03,
-        back_func = 'your_collection_other_gameobjects',
         modify_card = function(card, center)
-            center:apply(card, true)
+            card:set_sigil(center.key, true)
         end,
     })
 end
 
 --fecundity 
-SMODS.Seal { 
+SMODS.Sigil { 
     name = "fecundity",
     key = "test",
     badge_colour = HEX("9fff80"),
@@ -182,7 +191,7 @@ SMODS.Seal {
 }
 
 --Gift Bearererere
-SMODS.Seal { 
+SMODS.Sigil { 
     name = "Gift Bearer",
     key = "gifter",
     badge_colour = HEX("9fff80"),
@@ -227,7 +236,7 @@ SMODS.Seal {
 }
 
 --Overclocked
-SMODS.Seal { 
+SMODS.Sigil { 
     name = "Overclocked",
     key = "overc",
     badge_colour = HEX("9fff80"),
