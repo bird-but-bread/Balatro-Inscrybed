@@ -342,7 +342,7 @@ SMODS.Consumable {
 				delay = 0.1,
 				func = function()
 					if highlighted then
-						highlighted:set_seal("sig_test")
+						highlighted:set_sigil("sig_test")
 					end
 					return true
 				end,
