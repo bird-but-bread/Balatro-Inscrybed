@@ -1,6 +1,7 @@
 --- STEAMODDED HEADER
 --- MOD_NAME: Sigils mod
 --- MOD_ID: Sigils
+--- PREFIX: sig
 --- MOD_AUTHOR: [bird but bread]
 --- MOD_DESCRIPTION: adds some sigils from inscryption
 
@@ -175,7 +176,7 @@ end
 
 --fecundity 
 SMODS.Sigil { 
-    name = "fecundity",
+    name = "sig_fecundity",
     key = "test",
     badge_colour = HEX("9fff80"),
     config = { odds = 4 },
@@ -304,6 +305,73 @@ SMODS.Sigil {
         end
     end,
 }
+SMODS.Consumable {
+	set = "Spectral",
+	name = "Sigilapply",
+	key = "sigilapply",
+	order = 8,
+	config = {
+		-- This will add a tooltip.
+		mod_conv = "sig_test_sigil",
+		-- Tooltip args
+		seal = { planets_amount = 3 },
+		max_highlighted = 1,
+	},
+	loc_vars = function(self, info_queue, center)
+		-- Handle creating a tooltip with set args.
+		info_queue[#info_queue + 1] =
+			{ set = "Other", key = "sig_test_sigil", specific_vars = { self.config.seal.planets_amount } }
+		return { vars = { center.ability.max_highlighted } }
+	end,
+	cost = 4,
+	atlas = "sigils",
+	pos = { x = 0, y = 4 },
+	use = function(self, card, area, copier) --Good enough
+		local used_consumable = copier or card
+		for i = 1, #G.hand.highlighted do
+			local highlighted = G.hand.highlighted[i]
+			G.E_MANAGER:add_event(Event({
+				func = function()
+					play_sound("tarot1")
+					highlighted:juice_up(0.3, 0.5)
+					return true
+				end,
+			}))
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.1,
+				func = function()
+					if highlighted then
+						highlighted:set_seal("sig_test")
+					end
+					return true
+				end,
+			}))
+			delay(0.5)
+			G.E_MANAGER:add_event(Event({
+				trigger = "after",
+				delay = 0.2,
+				func = function()
+					G.hand:unhighlight_all()
+					return true
+				end,
+			}))
+		end
+	end,
+}
+
+     local conv_card = G.hand.highlighted[1]
+        G.E_MANAGER:add_event(Event({func = function()
+            play_sound('tarot1')
+            used_tarot:juice_up(0.3, 0.5)
+            return true end }))
+        
+        G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+            conv_card:set_seal(self.ability.extra, nil, true)
+            return true end }))
+        
+        delay(0.5)
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2,func = function() G.hand:unhighlight_all(); return true end }))
 
 ----------------------------------------------
 ------------MOD CODE END----------------------
