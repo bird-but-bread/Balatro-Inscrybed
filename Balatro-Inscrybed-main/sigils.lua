@@ -98,60 +98,10 @@ SMODS.Sigils = {}
 --    atlas = 'sigils',
 --}
 
-function Card:set_sigil(_sigil, silent, immediate)
-    self.sigil = nil
-    if _sigil then
-        self.sigil = _sigil
-	self.ability.sigil = {}
-	for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	    if type(v) == 'table' then
-	        self.ability.sigil[k] = copy_table(v)
-	    else
-	        self.ability.sigil[k] = v
-	    end
-  	end
-        if not silent then 
-        G.CONTROLLER.locks.sigil = true
-            if immediate then 
-                self:juice_up(0.3, 0.3)
-                play_sound('gold_seal', 1.2, 0.4)
-                G.CONTROLLER.locks.sigil = false
-            else
-                G.E_MANAGER:add_event(Event({
-                    trigger = 'after',
-                    delay = 0.3,
-                    func = function()
-                        self:juice_up(0.3, 0.3)
-                        play_sound('gold_seal', 1.2, 0.4)
-                    return true
-                    end
-                }))
-                G.E_MANAGER:add_event(Event({
-                    trigger = 'after',
-                    delay = 0.15,
-                    func = function()
-                        G.CONTROLLER.locks.sigil = false
-                    return true
-                    end
-                }))
-            end
-        end
-    end
-    self:set_cost()
-end
 
 
 
-function Card:calculate_sigil(context, key)
-    local sigil = SMODS.Sigils[key]
-    if self.ability[key] and type(sigil.calculate) == 'function' then
-        local o = sigil:calculate(self, context)
-        if o then
-            if not o.card then o.card = self end
-            return o
-        end
-    end
-end
+
 
 SMODS.current_mod.custom_collection_tabs = function()
 	return { UIBox_button {
