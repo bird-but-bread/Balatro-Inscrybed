@@ -102,6 +102,14 @@ function Card:set_sigil(_sigil, silent, immediate)
     self.sigil = nil
     if _sigil then
         self.sigil = _sigil
+	self.ability.sigil = {}
+	for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+	    if type(v) == 'table' then
+	        self.ability.sigil[k] = copy_table(v)
+	    else
+	        self.ability.sigil[k] = v
+	    end
+  	end
         if not silent then 
         G.CONTROLLER.locks.sigil = true
             if immediate then 
