@@ -17,7 +17,7 @@ SMODS.Atlas {
 
 SMODS.Sigils = {}
     SMODS.Sigil = SMODS.GameObject:extend {
-               obj_table = SMODS.Sigils,
+        obj_table = SMODS.Sigils,
         obj_buffer = {},
         rng_buffer = {},
         badge_to_key = {},
