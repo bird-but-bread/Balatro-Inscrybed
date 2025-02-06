@@ -109,3 +109,23 @@ payload = ''' local sigil = SMODS.Sigils[v] or SMODS.Sigil.badge_to_key[v] and S
 '''
 match_indent = true
 
+
+local seal = G.P_SEALS[self.seal or {}] or {}
+
+[[patches]]
+[patches.pattern]
+target = 'common_events.lua'
+pattern = '''local sigil = G.P_SEALS[self.sigil or {}] or {}'''
+position = 'before'
+payload = '''local sigil = G.P_SIGILS[self.sigil or {}] or {}
+                if type(sigil.draw) == 'function' then
+                    sigil:draw(self, layer)
+                elseif self.sigil then
+                    G.shared_sigils[self.sigil].role.draw_major = self
+                    G.shared_sigils[self.sigil]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+                    if self.sigil == 'Gold' then G.shared_sigils[self.sigil]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center) end
+                end
+'''
+match_indent = true
+
+
