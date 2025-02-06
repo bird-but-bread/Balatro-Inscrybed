@@ -176,4 +176,20 @@ payload = '''function Card:set_sigil(_sigil, silent, immediate)
 end'''
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:calculate_seal(context)'''
+position = 'before'
+payload = '''function Card:calculate_sigil(context, key)
+    local sigil = SMODS.Sigils[key]
+    if self.ability[key] and type(sigil.calculate) == 'function' then
+        local o = sigil:calculate(self, context)
+        if o then
+            if not o.card then o.card = self end
+            return o
+        end
+    end
+end'''
+match_indent = true
 
