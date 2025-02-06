@@ -110,12 +110,12 @@ payload = ''' local sigil = SMODS.Sigils[v] or SMODS.Sigil.badge_to_key[v] and S
 match_indent = true
 
 
-local seal = G.P_SEALS[self.seal or {}] or {}
+
 
 [[patches]]
 [patches.pattern]
-target = 'common_events.lua'
-pattern = '''local sigil = G.P_SEALS[self.sigil or {}] or {}'''
+target = 'card.lua'
+pattern = '''local seal = G.P_SEALS[self.seal or {}] or {}'''
 position = 'before'
 payload = '''local sigil = G.P_SIGILS[self.sigil or {}] or {}
                 if type(sigil.draw) == 'function' then
