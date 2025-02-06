@@ -86,4 +86,42 @@ position = 'before'
 payload = '''self.shared_sigils = {
     }'''
 match_indent = true
+            local seal = SMODS.Seals[v] or SMODS.Seal.badge_to_key[v] and SMODS.Seals[SMODS.Seal.badge_to_key[v]]
+            if seal and seal.generate_ui ~= 0 then
+            	local t = { key = v, set = 'Other' }
+            	info_queue[#info_queue+1] = t
+            	if seal.loc_vars and type(seal.loc_vars) == 'function' then
+            		local res = seal:loc_vars(info_queue, card) or {}
+            		t.vars = res.vars
+            		t.key = res.key or t.key
+                    t.set = res.set or t.set
+            	end
+            else
+            if v == 'gold_seal' then info_queue[#info_queue+1] = {key = 'gold_seal', set = 'Other'} end
+            if v == 'blue_seal' then info_queue[#info_queue+1] = {key = 'blue_seal', set = 'Other'} end
+            if v == 'red_seal' then info_queue[#info_queue+1] = {key = 'red_seal', set = 'Other'} end
+            if v == 'purple_seal' then info_queue[#info_queue+1] = {key = 'purple_seal', set = 'Other'} end
+            end
+
+          
+            
+
+[[patches]]
+[patches.pattern]
+target = 'common_events.lua'
+pattern = '''  if G.P_CENTERS['e_'..v] and G.P_CENTERS['e_'..v].set == 'Edition' then'''
+position = 'before'
+payload = ''' local sigil = SMODS.Sigils[v] or SMODS.Sigil.badge_to_key[v] and SMODS.Sigils[SMODS.Sigil.badge_to_key[v]]
+            if sigil and sigil.generate_ui ~= 0 then
+            	local t = { key = v, set = 'Other' }
+            	info_queue[#info_queue+1] = t
+            	if sigil.loc_vars and type(sigil.loc_vars) == 'function' then
+            		local res = sigil:loc_vars(info_queue, card) or {}
+            		t.vars = res.vars
+            		t.key = res.key or t.key
+                    t.set = res.set or t.set
+            	end
+            end
+'''
+match_indent = true
 
