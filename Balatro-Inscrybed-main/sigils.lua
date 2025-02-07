@@ -135,18 +135,9 @@ end
 --fecundity 
 SMODS.Sigil { 
     name = "sig_fecundity",
-    key = "test",
+    key = "fecundity",
     badge_colour = HEX("9fff80"),
     config = { odds = 4 },
-    loc_txt = {
-        label = "Sigil",
-        name = "fecundity",
-        text = {
-            "when a card bearing this Sigil is {C:attention}scored{}",
-            "{C:green}#1# in #2#{} chance",
-            "to create a {C:attention}copy{}",
-        },
-    },
     atlas = 'sigils',
     pos = {x=8, y=3},
     loc_vars = function(self, info_queue, card)
@@ -191,15 +182,6 @@ SMODS.Sigil {
     key = "gifter",
     badge_colour = HEX("9fff80"),
     config = {},
-    loc_txt = {
-        label = "Sigil",
-        name = "Gift Bearer",
-        text = {
-            "when a card", 
-            "bearing this Sigil is {C:attention}Discarded{}",
-            "Create a random joker",
-        },
-    },
     atlas = 'sigils',
     pos = {x=4, y=3},
     loc_vars = function(self, info_queue, card)
@@ -233,18 +215,9 @@ SMODS.Sigil {
 --Overclocked
 SMODS.Sigil { 
     name = "Overclocked",
-    key = "overc",
+    key = "overclocked",
     badge_colour = HEX("9fff80"),
     config = { x_mult = 2, odds = 2 },
-    loc_txt = {
-        label = "Sigil",
-        name = "Overclocked",
-        text = {
-            "{X:mult,C:white} X#1# {} Mult.", 
-            "If a card bearing this sigil is played and",
-            "doesn't win, {C:green}#2# in #3#{} chance it breaks.",
-        },
-    },
     loc_vars = function(self, info_queue)
         return { vars = { self.config.x_mult, G.GAME.probabilities.normal or 1, self.config.odds} }
     end,
