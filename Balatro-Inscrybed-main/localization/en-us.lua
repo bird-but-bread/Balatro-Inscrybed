@@ -27,8 +27,8 @@ return{
             },
         },
     lables={
-      sig_fecundity_sigil = "Fecundity Sigil"
-      sig_gifter_sigil = "Gift Bearer Sigil"
-      sig_overclocked_sigil = "Overclocked Sigil"
+      sig_fecundity_sigil = "Fecundity Sigil",
+      sig_gifter_sigil = "Gift Bearer Sigil",
+      sig_overclocked_sigil = "Overclocked Sigil",
     },
 }
