@@ -1,5 +1,13 @@
  return{
 	descriptions={
+		Back = {
+            b_insc_beast_deck = {
+                name = "Beast Deck",
+                text = {
+                    "its a deck",
+                }
+            },
+		},
 		Other={
 		  	insc_fecundity_sigil ={
 					name="Fecundity",
@@ -34,6 +42,7 @@
 			insc_overclocked_sigil = "Overclocked Sigil",
 		},
 		dictionary = {
+			b_create_death_card = "Create Death Card",
 			ml_edition_sigil_enhancement_explanation = {
 					"Playing cards may each have one",
 					"Enhancement, Edition, Sigil, and Seal"

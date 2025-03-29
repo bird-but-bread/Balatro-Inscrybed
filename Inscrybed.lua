@@ -1,3 +1,10 @@
+--- STEAMODDED HEADER
+--- MOD_NAME: Balatro Inscrybed
+--- MOD_ID: Balatro_Inscrybed
+--- PREFIX: insc
+--- MOD_AUTHOR: [bird but bread]
+--- MOD_DESCRIPTION: adds some sigils from inscryption
+
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -7,7 +14,145 @@ SMODS.Atlas {
     px = 71,
     py = 95
 }
+SMODS.Atlas {
+    key = "po3",
+    path = "po3_template.png",
+    px = 71,
+    py = 95
+}
+SMODS.Atlas {
+    key = "beast",
+    path = "beast_sprites.png",
+    px = 71,
+    py = 95
+}
+SMODS.Atlas {
+    key = "dcc",
+    path = "Death_card_Mockup.png",
+    px = 640,
+    py = 720
+}
 BalatroInscrybed = SMODS.current_mod
+
+Deathcard = {}
+
+
+
+            
+
+
+Deathcard.create_UIBox_select_summon_materials = function(card)
+
+    local amount = #G.jokers.cards + 1
+    BalatroInscrybed.death_card_area = CardArea(0, 10, G.CARD_W, G.CARD_H*3.4, 
+    {card_limit = 1, type = 'title', highlight_limit = 1})
+    BalatroInscrybed.chose_card_one = CardArea(0, 0, G.CARD_W, G.CARD_H*1, 
+    {card_limit = amount, type = 'title', highlight_limit = 1})
+
+
+    return {
+        n = G.UIT.ROOT, config = {align = "cm", minw = G.ROOM.T.w * 5, minh = G.ROOM.T.h * 5, padding = 0, r = 0.1, colour = HEX("3F4A61")}, nodes = {
+            {n=G.UIT.R, config={align = "tm"},nodes={
+                {n=G.UIT.C, config={align = "tm", padding    =-.5},nodes={
+                    {n=G.UIT.O, config = {object = Sprite(0, 0, 12, 12, G.ASSET_ATLAS['insc_dcc'], {x=0,y=0}), hover = true, can_collide = false}},
+                }},
+                {n=G.UIT.C, config={align = "tm", padding =-.5},nodes={
+                    {n=G.UIT.O, config = {object = BalatroInscrybed.death_card_area, hover = true, can_collide = false}},
+                }},     
+                {n=G.UIT.C, config={align = "tm", padding =-.5},nodes={ 
+                    {n=G.UIT.O, config = {object = Sprite(0, 0, 12, 12, G.ASSET_ATLAS['insc_dcc'], {x=1,y=0}), hover = true, can_collide = false}}, 
+                }},             
+            }},
+            {n=G.UIT.R, config={align = "bm", padding = 0,  minh=4,},nodes={
+                {n=G.UIT.O, config = {object = BalatroInscrybed.chose_card_one, hover = true, can_collide = false}},
+            }},
+
+        },}
+end
+
+G.FUNCS.death_card_start = function(e)
+    G.OVERLAY_MENU:remove()
+    G.OVERLAY_MENU = nil
+    G.FUNCS.overlay_menu({
+            definition = Deathcard.create_UIBox_select_summon_materials(card)
+        })
+    SMODS.add_card{
+        key = "j_insc_deathcard",
+        area = BalatroInscrybed.death_card_area
+    }
+    
+    for i = #G.jokers.cards, 1, -1 do
+        local card_ = G.jokers.cards[i]
+        G.jokers:remove_card(card_)
+        BalatroInscrybed.chose_card_one:emplace(card_)
+    end
+    SMODS.add_card{
+        key = "j_insc_deathcard",
+        BalatroInscrybed.chose_card_one
+    } 
+end
+
+--if G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.beast
+    
+--end
+
+
+SMODS.Joker {
+    name = "insc-deathcard",
+    key = "deathcard",
+    pos = { x = 0, y = 0 },
+    config = { extra = { } },
+    loc_vars = function(self, info_queue, center)
+        return { vars = { } }
+    end,
+    rarity = 1,
+    cost = 20,
+    blueprint_compat = true,
+    atlas = "po3",
+}
+
+
+SMODS.Back {
+    name = "insc-beast",
+    key = "beast_deck",
+    pos = { x = 0, y = 0 },
+    config = { extra = {check = true, chips = 10 } },
+    loc_vars = function(self, info_queue, center)
+        return { vars = { } }
+    end,
+    calculate = function(self, back, context)
+        if context.main_scoring and context.cardarea == G.play and back.ability.extra.check == true then
+            for i = 1, #context.scoring_hand do
+                card_ = context.scoring_hand[i]
+                if SMODS.has_enhancement(card_, "m_wild") then
+                    back.ability.extra.check = false
+                    G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+                    local _card = copy_card(card_, nil, nil, G.playing_card)
+                    _card:add_to_deck()
+                    G.deck.config.card_limit = G.deck.config.card_limit + 1
+                    table.insert(G.playing_cards, _card)
+                    G.hand:emplace(_card)
+                    _card.states.visible = nil
+                   
+                    G.E_MANAGER:add_event(Event({
+                        func = function()
+                            _card:start_materialize()
+                            return true
+                        end
+                    })) 
+                    _card.ability.perma_bonus = _card.ability.perma_bonus or 0
+                    _card.ability.perma_bonus = _card.ability.perma_bonus + back.ability.extra.chips
+                end
+            end
+        end
+        if context.end_of_round then
+            back.ability.extra.check = true
+        end
+    end,
+    atlas = "beast",
+}
+
+
 
 BalatroInscrybed.Sigils = {}
     BalatroInscrybed.Sigil = SMODS.GameObject:extend {
@@ -89,6 +234,10 @@ BalatroInscrybed.Sigils = {}
 --    },
 --    atlas = 'sigils',
 --}
+
+
+
+
 
 
 
@@ -258,7 +407,7 @@ SMODS.Consumable {
 				delay = 0.1,
 				func = function()
 					if highlighted then
-						highlighted:set_sigil("insc_gifter")
+						highlighted:set_sigil("insc_fecundity")
 					end
 					return true
 				end,

@@ -87,11 +87,25 @@ payload = '''self.shared_sigils = {
     }'''
 match_indent = true
 
-          
-            
 
 
 
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.R, config={id = 'from_game_over', align = "cm", minw = 5, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = "notify_then_setup_run", shadow = true, focus_args = {nav = 'wide', snap_to = true}}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true, maxw = 4.8}, nodes={
+              {n=G.UIT.T, config={text = localize('b_start_new_run'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
+            }}
+          }},'''
+position = 'before'
+payload = '''{n=G.UIT.R, config={align = "cm", minw = 5, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = "death_card_start", shadow = true, focus_args = {nav = 'wide', snap_to = true}}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true, maxw = 4.8}, nodes={
+              {n=G.UIT.T, config={text = localize('b_create_death_card'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
+            }}
+          }},'''
+match_indent = true
 
 [[patches]]
 [patches.pattern]
