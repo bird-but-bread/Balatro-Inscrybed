@@ -80,3 +80,4 @@ G.FUNCS.death_card_start = function(e)
     } 
 end
 
+-- cool stuff here

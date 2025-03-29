@@ -8,6 +8,14 @@
                 }
             },
 		},
+		spectral = {
+			c_insc_spectral = {
+				name = "insert name here",
+				text = {
+					"insert text here",
+				},
+			},
+		},
 		Other={
 		  	insc_fecundity_sigil ={
 					name="Fecundity",
