@@ -1,10 +1,3 @@
---- STEAMODDED HEADER
---- MOD_NAME: Balatro Inscrybed
---- MOD_ID: Balatro_Inscrybed
---- PREFIX: insc
---- MOD_AUTHOR: [bird but bread]
---- MOD_DESCRIPTION: adds some sigils from inscryption
-
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
