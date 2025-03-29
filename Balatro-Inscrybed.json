@@ -1,0 +1,13 @@
+{
+    "id": "Balatro_Inscrybed",
+    "name": "Balatro Inscrybed",
+    "display_name": "Inscrybed",
+    "author": ["bird but bread"],
+    "description": "adds some sigils from inscryption",
+    "prefix": "insc",
+    "main_file": "Inscrybed.lua",
+    "priority": 0,
+	"badge_colour": "ffbd72",
+	"badge_text_colour": "4f6367",
+    "version": "0.1.0",
+}
