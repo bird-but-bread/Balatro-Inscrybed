@@ -4,7 +4,11 @@
             b_insc_beast_deck = {
                 name = "Beast Deck",
                 text = {
-                    "its a deck",
+                    "The {C:attention}first{} scored {C:attention}wild card{}",
+					"of each round",
+					"permanently gains {C:mult}+10{} Mult", 
+					"then creates a copy",
+					"Start with {C:attention}2{} {C:tarot,T:c_lovers}The Lovers{}",
                 }
             },
 		},
