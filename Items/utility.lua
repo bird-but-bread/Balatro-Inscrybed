@@ -23,7 +23,7 @@ create_UIBox_your_collection_sigil = function()
         center = 'c_base',
         h_mod = 1.03,
         modify_card = function(card, center)
-            card:set_sigil(center.key, true)
+            card:apply_sigil(center.key, true)
         end,
     })
 end

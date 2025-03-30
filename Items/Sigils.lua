@@ -346,6 +346,131 @@ BalatroInscrybed.Sigil {
     end,
 }
 
+--Gem Spawn Conduit
+BalatroInscrybed.Sigil { 
+    name = "insc_Gem_Spawn_Conduit",
+    key = "gemconduit",
+    badge_colour = HEX("9fff80"),
+    config = {x_mult = 1.5},
+    atlas = 'sigils',
+    pos = {x=8, y=4},
+    loc_vars = function(self, info_queue, card)
+        return { vars = {card.ability.sigil.x_mult} }
+    end,
+    circuit = true,
+    calculate = function(self, card, context)
+        if context.main_scoring and context.cardarea == G.play then
+            for i = 1, #G.play.cards do
+                if G.play.cards[i].ability.in_between_circuit and SMODS.has_enhancement(G.play.cards[i],'m_stone') then
+                    SMODS.calculate_effect({Xmult_mod = card.ability.sigil.x_mult, message = localize{type='variable',key='a_xmult',vars={card.ability.sigil.x_mult}}}, G.play.cards[i])
+                end
+            end
+        end
+    end,
+    update = function(self, card, dt)
+        if G.hand ~= nil then
+            local conduits = {}
+            for i = 1, #G.hand.cards do
+                if G.hand.cards[i].sigil ~= nil then
+                    if G.P_SIGILS[G.hand.cards[i].sigil].circuit then
+                        table.insert(conduits, i)
+                    end
+                end
+                G.hand.cards[i].ability.in_between_circuit = false
+            end
+            if #conduits >= 2 then
+                index1 = conduits[1]
+                for i = index1, conduits[#conduits] do
+                    if i ~= index1 and i ~= conduits[#conduits] then
+                        G.hand.cards[i].ability.in_between_circuit = true 
+                    end
+                end
+            end
+        end
+        if G.play ~= nil then
+            local conduits = {}
+            for i = 1, #G.play.cards do
+                if G.play.cards[i].sigil ~= nil then
+                    if G.P_SIGILS[G.play.cards[i].sigil].circuit then
+                        table.insert(conduits, i)
+                    end
+                end
+                G.play.cards[i].ability.in_between_circuit = false
+            end
+            if #conduits >= 2 then
+                index1 = conduits[1]
+                for i = index1, conduits[#conduits] do
+                    if i ~= index1 and i ~= conduits[#conduits] then
+                        G.play.cards[i].ability.in_between_circuit = true 
+                    end
+                end
+            end
+        end
+    end,
+}
+
+--Buff When Powered
+BalatroInscrybed.Sigil { 
+    name = "insc_Buff_When_Powered",
+    key = "buff_powered",
+    badge_colour = HEX("9fff80"),
+    config = {x_mult = 2},
+    atlas = 'sigils',
+    pos = {x=2, y=5},
+    loc_vars = function(self, info_queue, card)
+        return { vars = {card.ability.sigil.x_mult} }
+    end,
+    calculate = function(self, card, context)
+        if context.main_scoring and context.cardarea == G.play then
+            if card.ability.in_between_circuit then
+                SMODS.calculate_effect({Xmult_mod = card.ability.sigil.x_mult, message = localize{type='variable',key='a_xmult',vars={card.ability.sigil.x_mult}}}, card)
+            end
+        end
+    end,
+}
+
+--Gift When Powered
+BalatroInscrybed.Sigil { 
+    name = "insc_Gift_When_Powered",
+    key = "gift_powered",
+    badge_colour = HEX("9fff80"),
+    config = {},
+    atlas = 'sigils',
+    pos = {x=1, y=5},
+    loc_vars = function(self, info_queue, card)
+        return { vars = {} }
+    end,
+    calculate = function(self, card, context)
+        if context.before then
+            if card.ability.in_between_circuit then
+                local unscoring_cards = {}
+                local scoring_lookup = {}
+                for i = 1, #context.scoring_hand do
+                    scoring_lookup[context.scoring_hand[i]] = true
+                end
+                for i = 1, #context.full_hand do
+                    local _card = context.full_hand[i]
+                    if not scoring_lookup[_card] then
+                        table.insert(unscoring_cards, _card)
+                    end
+                end
+                for i = 1, #unscoring_cards do
+                    if card == unscoring_cards[i] then
+                         if #G.jokers.cards < G.jokers.config.card_limit then 
+                            local card_ = create_card('Joker', G.jokers, nil, nil, nil, nil, nil, 'gift_powered')
+                            card_:add_to_deck()
+                            G.jokers:emplace(card_)
+                            card_:start_materialize()
+                            G.GAME.joker_buffer = 0
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end,
+}
+
 --Trifurcated When Powered
 BalatroInscrybed.Sigil { 
     name = "insc_Trifurcated_When_Powered",

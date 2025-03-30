@@ -171,6 +171,31 @@
 					"cards {C:attention}inside{} of it give {C:mult}+#1#{} mult"
 				},
 			},
+			insc_gemconduit_sigil ={
+				name = "Gem Spawn Conduit",
+				text = {
+					"If a card bearing this sigil",
+					"creates a {C:attention}circuit{}, all stone",
+					"cards in the {C:attention}circuit{} give {C:mult}X#1#{} mult"
+				},
+			},
+			insc_buff_powered_sigil ={
+				name = "Buff When Powered",
+				text = {
+					"If a card bearing this",
+					"sigil is inside a {C:attention}circuit{}",
+					"it gives {C:mult}X#1#{} mult",
+				},
+			},
+			insc_gift_powered_sigil ={
+				name = "Gift When Powered",
+				text = {
+					"If a card bearing this",
+					"sigil is inside a {C:attention}circuit{}",
+					"and {C:attention}not scored{}, create",
+					"a {C:attention}random{} joker"
+				},
+			},
 			insc_trifurcated_powered_sigil ={
 				name = "Trifurcated When Powered",
 				text = {
@@ -201,6 +226,9 @@
 			insc_tidal_sigil = "Tidal Lock Sigil",
 			insc_fledgling_sigil = "Fledgling Sigil",
 			insc_atkconduit_sigil = "Attack Conduit Sigil",
+			insc_gemconduit_sigil = "Gem Spawn Conduit Sigil",
+			insc_buff_powered_sigil = "Buff When Powered Sigil",
+			insc_gift_powered_sigil = "Gift When Powered Sigil",
 			insc_trifurcated_powered_sigil = "Trifurcated When Powered Sigil",
 		},
 		dictionary = {

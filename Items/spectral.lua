@@ -5,7 +5,7 @@ SMODS.Consumable {
 	order = 8,
 	config = {
 		-- This will add a tooltip.
-		mod_conv = "trifurcated_powered",
+		mod_conv = "gift_powered",
 		-- Tooltip args
 		sigil = { odds = 4 },
 		max_highlighted = 1,
@@ -54,7 +54,7 @@ SMODS.Consumable {
 	order = 8,
 	config = {
 		-- This will add a tooltip.
-		mod_conv = "atkconduit",
+		mod_conv = "buff_powered",
 		-- Tooltip args
 		sigil = { },
 		max_highlighted = 1,
@@ -103,7 +103,7 @@ SMODS.Consumable {
 	order = 8,
 	config = {
 		-- This will add a tooltip.
-		mod_conv = "fledgling",
+		mod_conv = "gemconduit",
 		-- Tooltip args
 		sigil = { x_mult = 2, odds = 2 },
 		max_highlighted = 1,
