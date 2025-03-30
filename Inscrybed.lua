@@ -8,6 +8,12 @@ SMODS.Atlas {
     py = 95
 }
 SMODS.Atlas {
+    key = "spectrals",
+    path = "Spectrals.png",
+    px = 71,
+    py = 95
+}
+SMODS.Atlas {
     key = "po3",
     path = "po3_template.png",
     px = 71,
@@ -38,7 +44,35 @@ assert(SMODS.load_file("Items/Jokers.lua"))()
 assert(SMODS.load_file("Items/Decks.lua"))()
 assert(SMODS.load_file("Items/spectral.lua"))()
 
+SMODS.DrawStep {
+    key = 'sigil',
+    order = 35,
+    func = function(self, layer)
+        if self.sigil and G.shared_sigils[self.sigil] then
+            G.shared_sigils[self.sigil].role.draw_major = self
+            G.shared_sigils[self.sigil]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+    end,
+    conditions = { vortex = false, facing = 'front' },
+}
 
+SMODS.DrawStep {
+    key = 'cicuit_shader',
+    order = 15,
+    func = function(self, layer)
+        if self.ability.in_between_circuit ~= nil and self.ability.in_between_circuit then
+            self.children.front:draw_shader('foil', nil, self.ARGS.send_to_shader)
+        end
+    end,
+    conditions = { vortex = false, facing = 'front' },
+}
+
+
+function SMODS.current_mod.reset_game_globals(run_start)
+	if run_start then
+		G.GAME.insc_extra_draw = 0
+	end
+end
 
 --if G and G.GAME and G.GAME.modifiers and G.GAME.modifiers.beast
     

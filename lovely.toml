@@ -21,8 +21,175 @@ payload = '''sigils = {tally = 0, of = 0},
 '''
 match_indent = true
 
+#some sigils utils
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "if (G.P_CENTERS[(card.edition or {}).key] or {}).never_scores then return true end"
+position = "before"
+payload = '''
+if card.sigil ~= nil then
+    if G.P_SIGILS[card.sigil].never_scores then
+        return true
+    end
+end
+'''
+match_indent = true 
 
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "if (G.P_CENTERS[(card.edition or {}).key] or {}).always_scores then return true end"
+position = "before"
+payload = '''
+if card.sigil ~= nil then
+    if G.P_SIGILS[card.sigil].always_scores then
+        return true
+    end
+end
+'''
+match_indent = true 
 
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "local enhancements = {}"
+position = "after"
+payload = '''
+if card.sigil ~= nil then
+    if G.P_SIGILS[card.sigil].counts_as_enhance then
+        enhancements[G.P_SIGILS[card.sigil].counts_as_enhance] = true
+    end
+end
+'''
+match_indent = true 
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+pattern = "local poker_hands = evaluate_poker_hand(_cards)"
+position = "before"
+payload = '''
+cards = {}
+for i = 1, #_cards do
+    table.insert(cards, _cards[i])
+    if _cards[i].sigil ~= nil then
+        if G.P_SIGILS[_cards[i].sigil].furcated then
+            for j = 1, (G.P_SIGILS[_cards[i].sigil].furcated-1) do
+                table.insert(cards, _cards[i])
+            end
+        end
+    end
+end
+_cards = {}
+for i = 1, #cards do
+    table.insert(_cards, cards[i])
+end
+'''
+match_indent = true 
+
+# Card:update()
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = 'if G.STAGE == G.STAGES.RUN then'
+position = 'before'
+match_indent = true
+payload = '''
+local obj = G.P_SIGILS[self.sigil] or {}
+if obj.update and type(obj.update) == 'function' then
+    obj:update(self, dt)
+end'''
+
+#draw from discard
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "draw_card(G.play,G.discard, it*100/play_count,'down', false, v)"
+position = "before"
+payload = '''
+if v.sigil ~= nil and G.P_SIGILS[v.sigil].no_discard then
+	draw_card(G.play,G.deck, it*100/play_count,'down', false, v)
+	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
+else
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "draw_card(G.play,G.discard, it*100/play_count,'down', false, v)"
+position = "after"
+payload = '''
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])"
+position = "before"
+payload = '''
+if G.hand.highlighted[i].sigil ~= nil and G.P_SIGILS[G.hand.highlighted[i].sigil].no_discard then
+    draw_card(G.hand, G.deck, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])
+	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
+else
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])"
+position = "after"
+payload = '''
+end
+'''
+match_indent = true
+
+#extra card draw
+[[patches]]
+[patches.pattern]
+target = '''functions/state_events.lua'''
+pattern = "for i=1, hand_space do*"
+position = "before"
+payload = '''
+hand_space = hand_space + G.GAME.insc_extra_draw
+G.GAME.insc_extra_draw = 0
+'''
+match_indent = true
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''
+-- TARGET: main end_of_round evaluation
+'''
+position = "after"
+payload = '''
+G.GAME.insc_extra_draw = 0
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.removed = true"
+position = "before"
+payload = '''
+if self.sigil ~= nil and self.area then
+    if G.P_SIGILS[self.sigil].no_discard and (self.area.config.type == 'deck' or self.area.config.type == 'joker' or self.area.config.type == 'play' or self.area.config.type == 'hand') then
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                self:start_materialize()
+                return true
+            end
+        })) 
+	    return
+    end
+end
+'''
+match_indent = true
 
 [[patches]]
 [patches.pattern]
@@ -105,22 +272,6 @@ payload = '''{n=G.UIT.R, config={align = "cm", minw = 5, padding = 0.1, r = 0.1,
               {n=G.UIT.T, config={text = localize('b_create_death_card'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
             }}
           }},'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''local seal = G.P_SEALS[self.seal or {}] or {}'''
-position = 'before'
-payload = '''local sigil = G.P_SIGILS[self.sigil or {}] or {}
-                if type(sigil.draw) == 'function' then
-                    sigil:draw(self, layer)
-                elseif self.sigil then
-                    G.shared_sigils[self.sigil].role.draw_major = self
-                    G.shared_sigils[self.sigil]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                    if self.sigil == 'Gold' then G.shared_sigils[self.sigil]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center) end
-                end
-'''
 match_indent = true
 
 [[patches]]
