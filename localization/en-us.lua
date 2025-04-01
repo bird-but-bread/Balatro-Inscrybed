@@ -187,6 +187,29 @@
 					"it gives {C:mult}X#1#{} mult",
 				},
 			},
+			insc_digger_sigil ={
+				name = "Bone Digger",
+				text = {
+					"When this card is {C:attention}held in",
+					"{C:attention}hand{} draw an {C:attention}additional{} card"
+				},
+			},
+			insc_bellist_sigil ={
+				name = "Bellist",
+				text = {
+					"Retrigger all {C:attention}held in hand",
+					"effects on this card and",
+					"{C:attention}any{} cards next to it",
+				},
+			},
+			insc_tail_sigil ={
+				name = "Loose Tail",
+				text = {
+					"When this card would be {C:red}destroyed",
+					"don't destroy it and add a {C:attention}copy",
+					"with {C:attention}half the rank{} of the original"
+				},
+			},
 			insc_gift_powered_sigil ={
 				name = "Gift When Powered",
 				text = {
@@ -205,10 +228,78 @@
 					"calculating {C:attention}Poker Hands",
 				},
 			},
+			insc_trinket_sigil ={
+				name = "Trinket Bearer",
+				text = {
+					"When this card is {C:attention}played{} gain",
+					" a {C:attention}random{} consumable",
+				},
+			},
+			insc_repulsive_sigil ={
+				name = "Repulsive",
+				text = {
+					"When this card is {C:attention}held in",
+					"{C:attention}hand{} the boss blind is {C:red}disabled"
+				},
+			},
+			insc_shield_latch_sigil ={
+				name = "Shield Latch",
+				text = {
+					"When this card is {C:red}destroyed",
+					"generate {C:attention}The Chariot{} consumable"
+				},
+			},
+			insc_bomb_latch_sigil ={
+				name = "Bomb Latch",
+				text = {
+					"When this card is {C:red}destroyed",
+					"generate {C:attention}The Hanged Man{} consumable"
+				},
+			},
+			insc_brittle_latch_sigil ={
+				name = "Brittle Latch",
+				text = {
+					"When this card is {C:red}destroyed",
+					"generate {C:attention}Justice{} consumable"
+				},
+			},
+			insc_mighty_leap_sigil ={
+				name = "Mighty Leap",
+				text = {
+					"When {C:red}discarded{} in a boss blind",
+					"{C:attention}disable{} the boss blind and",
+					"{C:red}destroy{} this card"
+				},
+			},
+			insc_frozen_sigil ={
+				name = "Frozen Away",
+				text = {
+					"When this card is {C:red}destroyed",
+					"create a copy with {C:chips}+#1#{} Chips",
+					"and {C:mult}+#2#{} Mult",
+				},
+			},
+			insc_swapper_sigil ={
+				name = "Swapper",
+				text = {
+					"Swaps any {C:chips}Chips{}",
+					"and {C:mult}Mult{} bonuses",
+				},
+			},
 		},
 	},
 	misc={	
 		labels={
+			insc_swapper_sigil = "Swapper Sigil",
+			insc_frozen_sigil = "Frozen Away Sigil",
+			insc_mighty_leap_sigil = "Mighty Leap Sigil",
+			insc_brittle_latch_sigil = "Brittle Latch Sigil",
+			insc_bomb_latch_sigil = "Bomb Latch Sigil",
+			insc_shield_latch_sigil = "Shield Latch Sigil",
+			insc_bellist_sigil = "Bellist Sigil",
+			insc_repulsive_sigil = "Repulsive Sigil",
+			insc_trinket_sigil = "Trinket Bearer Sigil",
+			insc_tail_sigil = "Loose Tail Sigil",
 			insc_fecundity_sigil = "Fecundity Sigil",
 			insc_gifter_sigil = "Gift Bearer Sigil",
 			insc_overclocked_sigil = "Overclocked Sigil",
@@ -229,6 +320,7 @@
 			insc_gemconduit_sigil = "Gem Spawn Conduit Sigil",
 			insc_buff_powered_sigil = "Buff When Powered Sigil",
 			insc_gift_powered_sigil = "Gift When Powered Sigil",
+			insc_digger_sigil = "Bone Digger Sigil",
 			insc_trifurcated_powered_sigil = "Trifurcated When Powered Sigil",
 		},
 		dictionary = {
@@ -237,6 +329,7 @@
 					"Playing cards may each have one",
 					"Enhancement, Edition, Sigil, and Seal"
 			},
+			insc_swap = 'Swap!',
 		}
   	},
 }

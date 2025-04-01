@@ -5,7 +5,7 @@ SMODS.Consumable {
 	order = 8,
 	config = {
 		-- This will add a tooltip.
-		mod_conv = "gift_powered",
+		mod_conv = "digger",
 		-- Tooltip args
 		sigil = { odds = 4 },
 		max_highlighted = 1,

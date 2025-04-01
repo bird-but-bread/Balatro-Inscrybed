@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 0
+priority = 5
 
 [[patches]]
 [patches.pattern]
@@ -29,7 +29,7 @@ pattern = "if (G.P_CENTERS[(card.edition or {}).key] or {}).never_scores then re
 position = "before"
 payload = '''
 if card.sigil ~= nil then
-    if G.P_SIGILS[card.sigil].never_scores then
+    if card.ability.sigil.never_scores then
         return true
     end
 end
@@ -43,7 +43,7 @@ pattern = "if (G.P_CENTERS[(card.edition or {}).key] or {}).always_scores then r
 position = "before"
 payload = '''
 if card.sigil ~= nil then
-    if G.P_SIGILS[card.sigil].always_scores then
+    if card.ability.sigil.always_scores then
         return true
     end
 end
@@ -57,8 +57,8 @@ pattern = "local enhancements = {}"
 position = "after"
 payload = '''
 if card.sigil ~= nil then
-    if G.P_SIGILS[card.sigil].counts_as_enhance then
-        enhancements[G.P_SIGILS[card.sigil].counts_as_enhance] = true
+    if card.ability.sigil.counts_as_enhance then
+        enhancements[card.ability.sigil.counts_as_enhance] = true
     end
 end
 '''
@@ -74,8 +74,8 @@ cards = {}
 for i = 1, #_cards do
     table.insert(cards, _cards[i])
     if _cards[i].sigil ~= nil then
-        if G.P_SIGILS[_cards[i].sigil].furcated then
-            for j = 1, (G.P_SIGILS[_cards[i].sigil].furcated-1) do
+        if _cards[i].ability.sigil.furcated then
+            for j = 1, (_cards[i].ability.sigil.furcated-1) do
                 table.insert(cards, _cards[i])
             end
         end
@@ -108,7 +108,7 @@ target = "functions/state_events.lua"
 pattern = "draw_card(G.play,G.discard, it*100/play_count,'down', false, v)"
 position = "before"
 payload = '''
-if v.sigil ~= nil and G.P_SIGILS[v.sigil].no_discard then
+if v.sigil ~= nil and v.ability.sigil.no_discard then
 	draw_card(G.play,G.deck, it*100/play_count,'down', false, v)
 	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
 else
@@ -131,7 +131,7 @@ target = "functions/state_events.lua"
 pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])"
 position = "before"
 payload = '''
-if G.hand.highlighted[i].sigil ~= nil and G.P_SIGILS[G.hand.highlighted[i].sigil].no_discard then
+if G.hand.highlighted[i].sigil ~= nil and G.hand.highlighted[i].ability.sigil.no_discard then
     draw_card(G.hand, G.deck, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])
 	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
 else
@@ -177,14 +177,22 @@ target = "card.lua"
 pattern = "self.removed = true"
 position = "before"
 payload = '''
-if self.sigil ~= nil and self.area then
-    if G.P_SIGILS[self.sigil].no_discard and (self.area.config.type == 'deck' or self.area.config.type == 'joker' or self.area.config.type == 'play' or self.area.config.type == 'hand') then
+if self.sigil ~= nil and self.ability.sigil.no_destroy ~= nil and self.area then
+    if self.ability.sigil.no_destroy[1] and (self.area.config.type == 'deck' or self.area.config.type == 'joker' or self.area.config.type == 'play' or self.area.config.type == 'hand') then
         G.E_MANAGER:add_event(Event({
             func = function()
                 self:start_materialize()
                 return true
             end
         })) 
+        if self.ability.sigil.no_destroy[3] ~= nil then
+            self.ability.sigil.no_destroy[3] = self.ability.sigil.no_destroy[3] - 1
+            if self.ability.sigil.no_destroy[2] and self.ability.sigil.no_destroy[3] == 0 then
+                self.ability.sigil.no_destroy[1] = false
+            end 
+        elseif self.ability.sigil.no_destroy[2] then
+            self.ability.sigil.no_destroy[1] = false
+        end
 	    return
     end
 end
@@ -283,8 +291,8 @@ payload = '''function Card:set_sigil(_sigil, silent, immediate)
     self.sigil = nil
     if _sigil then
         self.sigil = _sigil
-	self.ability.sigil = {}
-	for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+    self.ability.sigil = {}
+    for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
 	    if type(v) == 'table' then
 	        self.ability.sigil[k] = copy_table(v)
 	    else
