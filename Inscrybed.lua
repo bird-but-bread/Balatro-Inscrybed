@@ -8,6 +8,12 @@ SMODS.Atlas {
     py = 95
 }
 SMODS.Atlas {
+    key = "sigilsextra",
+    path = "SigilAtlasExtra.png",
+    px = 71,
+    py = 95
+}
+SMODS.Atlas {
     key = "spectrals",
     path = "Spectrals.png",
     px = 71,
@@ -46,11 +52,23 @@ assert(SMODS.load_file("Items/spectral.lua"))()
 
 SMODS.DrawStep {
     key = 'sigil',
-    order = 35,
+    order = 34,
     func = function(self, layer)
-        if self.sigil and G.shared_sigils[self.sigil] then
-            G.shared_sigils[self.sigil].role.draw_major = self
-            G.shared_sigils[self.sigil]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        if self.sigil ~= nil and self.sigil[1] ~= nil and G.shared_sigils[self.sigil[1]] then
+            G.shared_sigils[self.sigil[1]].role.draw_major = self
+            G.shared_sigils[self.sigil[1]]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+    end,
+    conditions = { vortex = false, facing = 'front' },
+}
+
+SMODS.DrawStep {
+    key = 'sigilextra',
+    order = 36,
+    func = function(self, layer)
+        if self.sigil ~= nil and self.sigil[2] ~= nil and G.shared_sigils2[self.sigil[2]] then
+            G.shared_sigils2[self.sigil[2]].role.draw_major = self
+            G.shared_sigils2[self.sigil[2]]:draw_shader('dissolve', nil, nil, nil, self.children.center)
         end
     end,
     conditions = { vortex = false, facing = 'front' },

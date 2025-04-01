@@ -23,9 +23,19 @@ create_UIBox_your_collection_sigil = function()
         center = 'c_base',
         h_mod = 1.03,
         modify_card = function(card, center)
-            card:set_sigil(center.key, true)
+            card:set_sigil(center.key, 1)
         end,
     })
+end
+
+function Card:get_sigil(index)
+	if self.sigil == nil then
+        return false
+    end
+    if self.sigil[index] ~= nil then
+        return self.sigil[index]
+    end
+    return false
 end
 
 insc_ability_calculate = function(card, equation, extra_value, exclusions, inclusions, do_round, only, extra_search)
@@ -84,7 +94,6 @@ insc_ability_calculate = function(card, equation, extra_value, exclusions, inclu
     end
   end
 end
-
 
 insc_ability_get_items = function(card, equation, extra_value, exclusions, inclusions, do_round, only, extra_search)
   if do_round == nil then do_round = true end

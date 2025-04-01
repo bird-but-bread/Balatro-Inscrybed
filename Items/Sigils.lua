@@ -5,6 +5,7 @@ BalatroInscrybed.Sigil = SMODS.GameObject:extend {
     badge_to_key = {},
     set = 'Sigil',
     atlas = 'centers',
+    atlas_extra = 'centers',
     pos = { x = 0, y = 0 },
     discovered = false,
     badge_colour = HEX('FFFFFF'),
@@ -16,6 +17,8 @@ BalatroInscrybed.Sigil = SMODS.GameObject:extend {
         G.P_SIGILS[self.key] = self
         G.shared_sigils[self.key] = Sprite(0, 0, G.CARD_W, G.CARD_H,
             G.ASSET_ATLAS[self.atlas] or G.ASSET_ATLAS['centers'], self.pos)
+        G.shared_sigils2[self.key] = Sprite(0, 0, G.CARD_W, G.CARD_H,
+            G.ASSET_ATLAS["insc_"..self.atlas_extra] or G.ASSET_ATLAS['centers'], self.pos)
         self.badge_to_key[self.key:lower() .. '_sigil'] = self.key
         SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
         self.rng_buffer[#self.rng_buffer + 1] = self.key
@@ -67,6 +70,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = { odds = 4 },
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=8, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = { G.GAME.probabilities.normal or 1, self.config.odds } }--might be center.config.odds
@@ -108,6 +112,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = { },
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=3, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
@@ -135,28 +140,37 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = { trigger = false, trigger2 = false },
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=6, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
     calculate = function(self, card, context)
         if G.hand ~= nil then
+            local index = nil
+            if card.sigil ~= nil then
+                if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                    index = 1
+                elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                    index = 2
+                end
+            end
             local _card = nil
-            card.ability.sigil.trigger = false
+            card.ability.sigil[index].trigger = false
             for i = 1, #G.hand.cards do
                 if G.hand.cards[i].sigil ~= nil and card == G.hand.cards[i] then
-                    card.ability.sigil.trigger = true
+                    card.ability.sigil[index].trigger = true
                     _card = G.hand.cards[i]
                     break
                 end
             end
             if _card ~= nil then
-                if _card.sigil ~= nil then
-                    if card.ability.sigil.trigger then
-                        if G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) and not card.ability.sigil.trigger2 then 
+                if _card.sigil[index] ~= nil then
+                    if card.ability.sigil[index].trigger then
+                        if G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) and not card.ability.sigil[index].trigger2 then 
                             card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('ph_boss_disabled')})
                             G.GAME.blind:disable()
-                            card.ability.sigil.trigger2 = true
+                            card.ability.sigil[index].trigger2 = true
                         end
                     end
                 end 
@@ -164,13 +178,21 @@ BalatroInscrybed.Sigil {
         end
         if (context.discard) or (context.remove_playing_cards) or (context.before and context.cardarea == G.play) then
             if card ~= nil then
+                local index = nil
                 if card.sigil ~= nil then
-                    if G.GAME.blind and ((G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) and card.ability.sigil.trigger2 then 
+                    if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                        index = 1
+                    elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                        index = 2
+                    end
+                end
+                if card.sigil[index] ~= nil then
+                    if G.GAME.blind and ((G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) and card.ability.sigil[index].trigger2 then 
                         local blind = G.GAME.blind
                         blind.disabled = false
                         G.GAME.blind:set_blind(blind, true, true)
                         G.GAME.blind:set_text()
-                        card.ability.sigil.trigger2 = false
+                        card.ability.sigil[index].trigger2 = false
                     end
                 end 
             end
@@ -185,22 +207,31 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = { trigger = false },
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=2, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
     calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
         if context.discard then
-            if card.sigil ~= nil then
+            if card.sigil[index] ~= nil then
                 if G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then 
                     card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('ph_boss_disabled')})
                     G.GAME.blind:disable()
                     card:start_dissolve()
-                    card.ability.sigil.trigger = true
+                    card.ability.sigil[index].trigger = true
                 end
             end 
         end
-        if context.destroying_card and card.ability.sigil.trigger then 
+        if context.destroying_card and card.ability.sigil[index].trigger then 
             return { remove = true }
         end
     end
@@ -213,6 +244,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=4, y=3},
     loc_vars = function(self, info_queue, card)
     return { vars = {} }
@@ -242,6 +274,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=4, y=4},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -271,6 +304,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=10, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -293,6 +327,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {no_discard = true, no_destroy = {true, false}},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=1, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -306,6 +341,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=7, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -337,6 +373,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=6, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -368,6 +405,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=8, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -399,6 +437,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=7, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -407,10 +446,18 @@ BalatroInscrybed.Sigil {
         if context.remove_playing_cards and not context.blueprint then
             for i = 1, #context.removed do
                 if context.removed[i] == card then
+                    local index = nil
+                    if card.sigil ~= nil then
+                        if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                            index = 1
+                        elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                            index = 2
+                        end
+                    end
                     for j = 1, 3 do
                         G.playing_card = (G.playing_card and G.playing_card + 1) or 1
                         local _card = copy_card(card, nil, nil, G.playing_card)
-                        _card:set_sigil(nil)
+                        _card:set_sigil(nil, index)
                         _card:add_to_deck()
                         G.deck.config.card_limit = G.deck.config.card_limit + 1
                         table.insert(G.playing_cards, _card)
@@ -437,6 +484,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {no_destroy = {true, true, 1}},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=5, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -444,32 +492,42 @@ BalatroInscrybed.Sigil {
     calculate = function(self, card, context)
         if context.remove_playing_cards and not context.blueprint then
             for i = 1, #context.removed do
-                if context.removed[i] == card and card.ability.sigil.no_destroy[3] ~= nil and card.ability.sigil.no_destroy[3] ~= 0 then
-                    G.playing_card = (G.playing_card and G.playing_card + 1) or 1
-                    local _card = copy_card(card, nil, nil, G.playing_card)
-                    local _suit = string.sub(card.base.suit, 1, 1)..'_'
-                    local rank_suffix = card.base.id == 14 and 2 or math.min(math.floor(card.base.id / 2), 14)
-                    if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
-                    elseif rank_suffix == 10 then rank_suffix = 'T'
-                    elseif rank_suffix == 11 then rank_suffix = 'J'
-                    elseif rank_suffix == 12 then rank_suffix = 'Q'
-                    elseif rank_suffix == 13 then rank_suffix = 'K'
-                    elseif rank_suffix == 14 then rank_suffix = 'A'
-                    end
-                    _card:set_base(G.P_CARDS[_suit..rank_suffix])
-                    _card:set_sigil(nil)
-                    _card:add_to_deck()
-                    G.deck.config.card_limit = G.deck.config.card_limit + 1
-                    table.insert(G.playing_cards, _card)
-                    G.deck:emplace(_card)
-                    _card.states.visible = nil
-
-                    G.E_MANAGER:add_event(Event({
-                        func = function()
-                            _card:start_materialize()
-                            return true
+                if context.removed[i] == card then
+                    local index = nil
+                    if card.sigil ~= nil then
+                        if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                            index = 1
+                        elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                            index = 2
                         end
-                    })) 
+                    end
+                    if card.ability.sigil[index].no_destroy[3] ~= nil and card.ability.sigil[index].no_destroy[3] ~= 0 then
+                        G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+                        local _card = copy_card(card, nil, nil, G.playing_card)
+                        local _suit = string.sub(card.base.suit, 1, 1)..'_'
+                        local rank_suffix = card.base.id == 14 and 2 or math.min(math.floor(card.base.id / 2), 14)
+                        if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+                        elseif rank_suffix == 10 then rank_suffix = 'T'
+                        elseif rank_suffix == 11 then rank_suffix = 'J'
+                        elseif rank_suffix == 12 then rank_suffix = 'Q'
+                        elseif rank_suffix == 13 then rank_suffix = 'K'
+                        elseif rank_suffix == 14 then rank_suffix = 'A'
+                        end
+                        _card:set_base(G.P_CARDS[_suit..rank_suffix])
+                        _card:set_sigil(nil, index)
+                        _card:add_to_deck()
+                        G.deck.config.card_limit = G.deck.config.card_limit + 1
+                        table.insert(G.playing_cards, _card)
+                        G.deck:emplace(_card)
+                        _card.states.visible = nil
+
+                        G.E_MANAGER:add_event(Event({
+                            func = function()
+                                _card:start_materialize()
+                                return true
+                            end
+                        })) 
+                    end
                 end
             end
         end
@@ -483,19 +541,36 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {chips = 30, mult = 15},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=9, y=6},
     loc_vars = function(self, info_queue, card)
-        return { vars = {card.ability.sigil.chips, card.ability.sigil.mult} }
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = {card.ability.sigil[index].chips, card.ability.sigil[index].mult} }
     end,
     calculate = function(self, card, context)
         if context.remove_playing_cards and not context.blueprint then
             for i = 1, #context.removed do
                 if context.removed[i] == card then
+                    local index = nil
+                    if card.sigil ~= nil then
+                        if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                            index = 1
+                        elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                            index = 2
+                        end
+                    end
                     G.playing_card = (G.playing_card and G.playing_card + 1) or 1
                     local _card = copy_card(card, nil, nil, G.playing_card)
-                    _card:set_sigil(nil)
-                    _card.ability.perma_bonus = _card.ability.perma_bonus + card.ability.sigil.chips
-                    _card.ability.perma_mult = _card.ability.perma_mult + card.ability.sigil.mult
+                    _card:set_sigil(nil, index)
+                    _card.ability.perma_bonus = _card.ability.perma_bonus + card.ability.sigil[index].chips
+                    _card.ability.perma_mult = _card.ability.perma_mult + card.ability.sigil[index].mult
                     _card:add_to_deck()
                     G.deck.config.card_limit = G.deck.config.card_limit + 1
                     table.insert(G.playing_cards, _card)
@@ -521,9 +596,10 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=6, y=0},
     loc_vars = function(self, info_queue, card)
-        return { vars = {card.ability.sigil.chips, card.ability.sigil.mult} }
+        return { vars = {} }
     end,
     calculate = function(self, card, context)
         if context.before then
@@ -617,6 +693,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=4, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -642,6 +719,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=4, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -667,16 +745,33 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {mult = 7},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=10, y=4},
     loc_vars = function(self, info_queue, card)
-        return { vars = {card.ability.sigil.mult} }
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = {card.ability.sigil[index].mult} }
     end,
     circuit = true,
     calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
         if context.main_scoring and context.cardarea == G.play then
             for i = 1, #G.play.cards do
                 if G.play.cards[i].ability.in_between_circuit then
-                    SMODS.calculate_effect({mult_mod = card.ability.sigil.mult, message = localize{type='variable',key='a_mult',vars={card.ability.sigil.mult}}}, G.play.cards[i])
+                    SMODS.calculate_effect({mult_mod = card.ability.sigil[index].mult, message = localize{type='variable',key='a_mult',vars={card.ability.sigil[index].mult}}}, G.play.cards[i])
                 end
             end
         end
@@ -686,8 +781,17 @@ BalatroInscrybed.Sigil {
             local conduits = {}
             for i = 1, #G.hand.cards do
                 if G.hand.cards[i].sigil ~= nil then
-                    if G.P_SIGILS[G.hand.cards[i].sigil].circuit then
-                        table.insert(conduits, i)
+                    if G.hand.cards[i].sigil ~= nil then
+                        if G.hand.cards[i].sigil[1] ~= nil then
+                            if G.P_SIGILS[G.hand.cards[i].sigil[1]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
+                        if G.hand.cards[i].sigil[2] ~= nil then
+                            if G.P_SIGILS[G.hand.cards[i].sigil[2]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
                     end
                 end
                 G.hand.cards[i].ability.in_between_circuit = false
@@ -705,8 +809,17 @@ BalatroInscrybed.Sigil {
             local conduits = {}
             for i = 1, #G.play.cards do
                 if G.play.cards[i].sigil ~= nil then
-                    if G.P_SIGILS[G.play.cards[i].sigil].circuit then
-                        table.insert(conduits, i)
+                    if G.play.cards[i].sigil ~= nil then
+                        if G.play.cards[i].sigil[1] ~= nil then
+                            if G.P_SIGILS[G.play.cards[i].sigil[1]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
+                        if G.play.cards[i].sigil[2] ~= nil then
+                            if G.P_SIGILS[G.play.cards[i].sigil[2]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
                     end
                 end
                 G.play.cards[i].ability.in_between_circuit = false
@@ -723,23 +836,40 @@ BalatroInscrybed.Sigil {
     end,
 }
 
---Gem Spawn Conduit
+--Gem Spawn Conduit set_sigil
 BalatroInscrybed.Sigil { 
     name = "insc_Gem_Spawn_Conduit",
     key = "gemconduit",
     badge_colour = HEX("9fff80"),
     config = {x_mult = 1.5},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=8, y=4},
     loc_vars = function(self, info_queue, card)
-        return { vars = {card.ability.sigil.x_mult} }
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = {card.ability.sigil[index].x_mult} }
     end,
     circuit = true,
     calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
         if context.main_scoring and context.cardarea == G.play then
             for i = 1, #G.play.cards do
                 if G.play.cards[i].ability.in_between_circuit and SMODS.has_enhancement(G.play.cards[i],'m_stone') then
-                    SMODS.calculate_effect({Xmult_mod = card.ability.sigil.x_mult, message = localize{type='variable',key='a_xmult',vars={card.ability.sigil.x_mult}}}, G.play.cards[i])
+                    SMODS.calculate_effect({Xmult_mod = card.ability.sigil[index].x_mult, message = localize{type='variable',key='a_xmult',vars={card.ability.sigil[index].x_mult}}}, G.play.cards[i])
                 end
             end
         end
@@ -749,8 +879,17 @@ BalatroInscrybed.Sigil {
             local conduits = {}
             for i = 1, #G.hand.cards do
                 if G.hand.cards[i].sigil ~= nil then
-                    if G.P_SIGILS[G.hand.cards[i].sigil].circuit then
-                        table.insert(conduits, i)
+                    if G.hand.cards[i].sigil ~= nil then
+                        if G.hand.cards[i].sigil[1] ~= nil then
+                            if G.P_SIGILS[G.hand.cards[i].sigil[1]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
+                        if G.hand.cards[i].sigil[2] ~= nil then
+                            if G.P_SIGILS[G.hand.cards[i].sigil[2]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
                     end
                 end
                 G.hand.cards[i].ability.in_between_circuit = false
@@ -768,8 +907,17 @@ BalatroInscrybed.Sigil {
             local conduits = {}
             for i = 1, #G.play.cards do
                 if G.play.cards[i].sigil ~= nil then
-                    if G.P_SIGILS[G.play.cards[i].sigil].circuit then
-                        table.insert(conduits, i)
+                    if G.play.cards[i].sigil ~= nil then
+                        if G.play.cards[i].sigil[1] ~= nil then
+                            if G.P_SIGILS[G.play.cards[i].sigil[1]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
+                        if G.play.cards[i].sigil[2] ~= nil then
+                            if G.P_SIGILS[G.play.cards[i].sigil[2]].circuit then
+                                table.insert(conduits, i)
+                            end
+                        end
                     end
                 end
                 G.play.cards[i].ability.in_between_circuit = false
@@ -793,14 +941,31 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {x_mult = 2},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=2, y=5},
     loc_vars = function(self, info_queue, card)
-        return { vars = {card.ability.sigil.x_mult} }
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = {card.ability.sigil[index].x_mult} }
     end,
     calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
         if context.main_scoring and context.cardarea == G.play then
             if card.ability.in_between_circuit then
-                SMODS.calculate_effect({Xmult_mod = card.ability.sigil.x_mult, message = localize{type='variable',key='a_xmult',vars={card.ability.sigil.x_mult}}}, card)
+                SMODS.calculate_effect({Xmult_mod = card.ability.sigil[index].x_mult, message = localize{type='variable',key='a_xmult',vars={card.ability.sigil[index].x_mult}}}, card)
             end
         end
     end,
@@ -813,6 +978,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=1, y=5},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -855,6 +1021,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {furcated = 1},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=0, y=5},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -863,11 +1030,24 @@ BalatroInscrybed.Sigil {
         if G.hand ~= nil then
             for i = 1, #G.hand.cards do
                 if G.hand.cards[i].sigil ~= nil then
-                    if G.P_SIGILS[G.hand.cards[i].sigil].furcated then
-                        if G.hand.cards[i].ability.in_between_circuit then
-                            G.hand.cards[i].ability.sigil.furcated = 3
-                        else
-                            G.hand.cards[i].ability.sigil.furcated = 1
+                    if G.hand.cards[i].sigil ~= nil then
+                        if G.hand.cards[i].sigil[1] ~= nil then
+                            if G.P_SIGILS[G.hand.cards[i].sigil[1]].furcated then
+                                if G.hand.cards[i].ability.in_between_circuit then
+                                    G.hand.cards[i].ability.sigil[1].furcated = 3
+                                else
+                                    G.hand.cards[i].ability.sigil[1].furcated = 1
+                                end
+                            end
+                        end
+                        if G.hand.cards[i].sigil[2] ~= nil then
+                            if G.P_SIGILS[G.hand.cards[i].sigil[2]].furcated then
+                                if G.hand.cards[i].ability.in_between_circuit then
+                                    G.hand.cards[i].ability.sigil[2].furcated = 3
+                                else
+                                    G.hand.cards[i].ability.sigil[2].furcated = 1
+                                end
+                            end
                         end
                     end
                 end
@@ -876,11 +1056,24 @@ BalatroInscrybed.Sigil {
         if G.play ~= nil then
             for i = 1, #G.play.cards do
                 if G.play.cards[i].sigil ~= nil then
-                    if G.P_SIGILS[G.play.cards[i].sigil].furcated then
-                        if G.play.cards[i].ability.in_between_circuit then
-                            G.play.cards[i].ability.sigil.furcated = 3
-                        else
-                            G.play.cards[i].ability.sigil.furcated = 1
+                    if G.play.cards[i].sigil ~= nil then
+                        if G.play.cards[i].sigil[1] ~= nil then
+                            if G.P_SIGILS[G.play.cards[i].sigil[1]].furcated then
+                                if G.play.cards[i].ability.in_between_circuit then
+                                    G.play.cards[i].ability.sigil[1].furcated = 3
+                                else
+                                    G.play.cards[i].ability.sigil[1].furcated = 1
+                                end
+                            end
+                        end
+                        if G.play.cards[i].sigil[2] ~= nil then
+                            if G.P_SIGILS[G.play.cards[i].sigil[2]].furcated then
+                                if G.play.cards[i].ability.in_between_circuit then
+                                    G.play.cards[i].ability.sigil[2].furcated = 3
+                                else
+                                    G.play.cards[i].ability.sigil[2].furcated = 1
+                                end
+                            end
                         end
                     end
                 end
@@ -896,14 +1089,31 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {mult = 0, mult_mod = 5},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=5, y=8},
     loc_vars = function(self, info_queue, card)
-        return { vars = {card.ability.sigil.mult, card.ability.sigil.mult_mod} }
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = {card.ability.sigil[index].mult, card.ability.sigil[index].mult_mod} }
     end,
     calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
         if context.main_scoring and context.cardarea == G.play then
-            if card.ability.sigil.mult ~= 0 then
-                SMODS.calculate_effect({mult_mod = card.ability.sigil.mult, message = localize{type='variable',key='a_mult',vars={card.ability.sigil.mult}}}, card)
+            if card.ability.sigil[index].mult ~= 0 then
+                SMODS.calculate_effect({mult_mod = card.ability.sigil[index].mult, message = localize{type='variable',key='a_mult',vars={card.ability.sigil[index].mult}}}, card)
             end
         end
         if context.before then
@@ -920,7 +1130,7 @@ BalatroInscrybed.Sigil {
             end
             for i = 1, #unscoring_cards do
                 if card == unscoring_cards[i] then
-                    card.ability.sigil.mult = card.ability.sigil.mult + card.ability.sigil.mult_mod
+                    card.ability.sigil[index].mult = card.ability.sigil[index].mult + card.ability.sigil[index].mult_mod
                 end
             end
         end
@@ -934,6 +1144,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {extra = 2},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=3, y=0},
     loc_vars = function(self, info_queue, card)
         return {
@@ -947,6 +1158,46 @@ BalatroInscrybed.Sigil {
     end
 }
 
+--Bellist
+--BalatroInscrybed.Sigil { 
+--    name = "insc_Bellist",
+--    key = "bellist",
+--    badge_colour = HEX("9fff80"),
+--    config = {},
+--    atlas = 'sigils',
+--    pos = {x=6, y=4},
+--    loc_vars = function(self, info_queue, card)
+--        return {
+--            vars = {}
+--        }
+--    end,
+--    calculate = function(self, card, context)
+--        if context.repetition and context.cardarea == G.hand and context.individual then
+--            local valid_cards = {}
+--            for i = 1, #G.hand.cards do
+--                if G.hand.cards[i] == card then
+--                    if i == 1 then
+--                        table.insert(valid_cards, G.hand.cards[i+1])
+--                        table.insert(valid_cards, G.hand.cards[i])
+--                    elseif i == #G.hand.cards then
+--                        table.insert(valid_cards, G.hand.cards[i-1])
+--                        table.insert(valid_cards, G.hand.cards[i])
+--                    else
+--                        table.insert(valid_cards, G.hand.cards[i+1])
+--                        table.insert(valid_cards, G.hand.cards[i])
+--                        table.insert(valid_cards, G.hand.cards[i-1])
+--                    end
+--                end
+--            end
+--            for i = 1, #valid_cards do
+--                if valid_cards[i].config.center.key ~= "c_base" and other_card == valid_cards[i] then
+--                    SMODS.trigger_effects(context.card_effects, valid_cards[i])
+--                end
+--            end
+--        end
+--    end
+--}
+
 --Bone Digger
 BalatroInscrybed.Sigil { 
     name = "insc_Bone_Digger",
@@ -954,6 +1205,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {active = false, trigger = 0},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=8, y=5},
     loc_vars = function(self, info_queue, card)
         return {
@@ -961,6 +1213,14 @@ BalatroInscrybed.Sigil {
         }
     end,
     calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
         if context.main_scoring and context.cardarea == G.play then
             for i = 1, #G.play.cards do
                 if G.play.cards[i].sigil ~= nil and card == G.play.cards[i] then
@@ -973,28 +1233,30 @@ BalatroInscrybed.Sigil {
             local _card = nil
             for i = 1, #G.hand.cards do
                 if G.hand.cards[i].sigil ~= nil and card == G.hand.cards[i] then
-                    card.ability.sigil.trigger = 1
+                    card.ability.sigil[index].trigger = 1
                     _card = G.hand.cards[i]
                     break
                 end
             end
             if _card ~= nil then
                 if _card.sigil ~= nil then
-                    if card.ability.sigil.trigger == 1 then
-                        if not card.ability.sigil.active then
-                            G.GAME.insc_extra_draw = G.GAME.insc_extra_draw + 1
-                            card.ability.sigil.active = true
-                            card.ability.sigil.trigger = -1
+                    if _card.sigil[index] ~= nil then
+                        if card.ability.sigil[index].trigger == 1 then
+                            if not card.ability.sigil[index].active then
+                                G.GAME.insc_extra_draw = G.GAME.insc_extra_draw + 1
+                                card.ability.sigil[index].active = true
+                                card.ability.sigil[index].trigger = -1
+                            end
+                        else
+                            if card.ability.sigil[index].active then
+                                G.GAME.insc_extra_draw = G.GAME.insc_extra_draw - 1
+                                card.ability.sigil[index].active = false
+                            end
                         end
-                    else
-                        if card.ability.sigil.active then
-                            G.GAME.insc_extra_draw = G.GAME.insc_extra_draw - 1
-                            card.ability.sigil.active = false
+                        if context.hand_drawn then
+                            card.ability.sigil[index].trigger = 1
+                            card.ability.sigil[index].active = false
                         end
-                    end
-                    if context.hand_drawn then
-                        card.ability.sigil.trigger = 1
-                        card.ability.sigil.active = false
                     end
                 end 
             end
@@ -1009,6 +1271,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=8, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -1027,6 +1290,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {always_scores = true,},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=9, y=7},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -1040,6 +1304,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {counts_as_enhance = "m_stone"},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=5, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -1053,6 +1318,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {furcated = 2},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=5, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -1066,6 +1332,7 @@ BalatroInscrybed.Sigil {
     badge_colour = HEX("9fff80"),
     config = {furcated = 3},
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=2, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
@@ -1082,6 +1349,7 @@ BalatroInscrybed.Sigil {
         return { vars = { self.config.x_mult, G.GAME.probabilities.normal or 1, self.config.odds} }
     end,
     atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
     pos = {x=7, y=2},
     calculate = function(self, card, context)
         if context.main_scoring and context.cardarea == G.play then
