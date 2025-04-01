@@ -28,6 +28,8 @@ SMODS.Back {
                     })) 
                     _card.ability.perma_bonus = _card.ability.perma_bonus or 0
                     _card.ability.perma_bonus = _card.ability.perma_bonus + back.ability.extra.chips
+
+
                 end
             end
         end
