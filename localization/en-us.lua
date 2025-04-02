@@ -197,9 +197,10 @@
 			insc_bellist_sigil ={
 				name = "Bellist",
 				text = {
-					"Retrigger all {C:attention}held in hand",
-					"effects on this card and",
-					"{C:attention}any{} cards next to it",
+					"When a card bearing this",
+					"sigil is {C:attention}held in hand{} it will",
+					"{C:green}trigger{} the {C:dark_edition}enhancements",
+					"of the cards {C:attention}next{} to it"
 				},
 			},
 			insc_tail_sigil ={
@@ -286,11 +287,119 @@
 					"and {C:mult}Mult{} bonuses",
 				},
 			},
+			insc_ant_sigil ={
+				name = "Ant",
+				text = {
+					"{C:green}#2# in #3#{} chance to {C:attention}retrigger{}",
+					"this card once for {C:attention}every{} ant",
+					"{C:inactive}(Currently {C:green}#1#{}{C:inactive} Times)"
+				},
+			},
+			insc_ant_spawner_sigil ={
+				name = "Ant Spawner",
+				text = {
+					"{C:green}#1# in #2#{} chance for any card next",
+					"to a card bearing this sigil to",
+					"{C:green}gain{} the {C:dark_edition}Ant sigil{} when {C:attention}played"
+				},
+			},
+			insc_clinger_sigil ={
+				name = "Clinger",
+				text = {
+					"A card bearing this sigil",
+					"is {C:attention}always{} selected",
+				},
+			},
+			insc_detonator_sigil ={
+				name = "Detonator",
+				text = {
+					"When a card bearing this sigil",
+					"is {C:red}destroyed{}, {C:red}destroy{} the cards",
+					"to the {C:attention}left{} and {C:attention}right",
+					"of it as well"
+				},
+			},
+			insc_burrower_sigil ={
+				name = "Burrower",
+				text = {
+					"When a card bearing this sigil",
+					"is played but {C:attention}not scored{}, draw",
+					"an {C:attention}additional{} card"
+				},
+			},
+			insc_armored_sigil ={
+				name = "Armored",
+				text = {
+					"When this card is {C:attention}scored{} it",
+					"{C:attention}returns{} to your hand",
+				},
+			},
+			insc_guardian_sigil ={
+				name = "Guardian",
+				text = {
+					"Cards bearing this sigil are",
+					"{C:attention}automatically drawn{} to your",
+					"first hand on a {C:attention}boss{} blind"
+				},
+			},
+			insc_corpse_eater_sigil ={
+				name = "Corpse Eater",
+				text = {
+					"When a card is {C:red}discarded{}, any",
+					"cards bearing this sigil are",
+					"{C:green}guaranteed{} to be {C:attention}drawn"
+				},
+			},
+			insc_handy_sigil ={
+				name = "Handy",
+				text = {
+					"When this card is {C:attention}played",
+					"{C:red}discard{} your hand and",
+					"{C:attention}draw{} a new one"
+				},
+			},
+			insc_morsel_sigil ={
+				name = "Morsel",
+				text = {
+					"When a card bearing this Sigil is",
+					"{C:red}discarded{}, it's instead {C:red}destroyed{},",
+					"and {C:green}levels up{} the {C:attention}last played hand"
+				},
+			},
+			insc_energy_conduit_sigil ={
+				name = "Energy Conduit",
+				text = {
+					"If a card bearing this sigil",
+					"completes a {C:attention}circuit{}, the played",
+					"hand does {C:attention}not{} cost a hand"
+				},
+			},
+			insc_touch_death_sigil ={
+				name = "Touch of Death",
+				text = {
+					"When a card bearing this Sigil is",
+					"{C:attention}scored{}, gain {C:red}X#2#{} Mult and",
+					"{C:red}destroy{} a {C:attention}random{} joker",
+					"{C:inactive}(Currently {C:red}X#1#{} {C:inactive}Mult)"
+				},
+			},
 		},
 	},
 	misc={	
 		labels={
+			insc_morsel_sigil = "Morsel Sigil",
+			insc_touch_death_sigil = "Touch of Death Sigil",
+			insc_energy_conduit_sigil = "Energy Sigil",
+			insc_handy_sigil = "Handy Sigil",
+			insc_guardian_sigil = "Guardian Sigil",
+			insc_corpse_eater_sigil = "Corpse Eater Sigil",
+			insc_armored_sigil = "Armored Sigil",
+			insc_burrower_sigil = "Burrower Sigil",
+			insc_detonator_sigil = "Detonator Sigil",
 			insc_swapper_sigil = "Swapper Sigil",
+			insc_clinger_sigil = "Clinger Sigil",
+			insc_ant_sigil = "Ant Sigil",
+			insc_ant_spawner_sigil = "Ant Spawner Sigil",
 			insc_frozen_sigil = "Frozen Away Sigil",
 			insc_mighty_leap_sigil = "Mighty Leap Sigil",
 			insc_brittle_latch_sigil = "Brittle Latch Sigil",

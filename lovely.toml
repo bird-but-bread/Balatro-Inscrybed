@@ -142,6 +142,146 @@ if self.sigil ~= nil then
 end
 '''
 
+[[patches]]
+[patches.pattern]
+target = "cardarea.lua"
+pattern = "pseudoshuffle(self.cards, pseudoseed(_seed or 'shuffle'))"
+position = "after"
+payload = '''
+for i = #self.cards, 1, -1 do
+    local card = self.cards[i]
+    if card.sigil ~= nil and card.ability and card.ability.sigil then
+        local index = nil
+        if card.sigil[1] ~= nil and card.ability.sigil[1] and card.ability.sigil[1].insert_in_deck then
+            if card.ability.sigil[1].insert_in_deck[1] ~= nil then
+                index = 1
+            end
+        end
+        if card.sigil[2] ~= nil and card.ability.sigil[2] and card.ability.sigil[2].insert_in_deck then
+            if card.ability.sigil[2].insert_in_deck[1] ~= nil then
+                index = 2
+            end
+        end
+
+        if index and card.sigil[index] ~= nil and card.ability.sigil[index].insert_in_deck ~= nil then
+            local insertDeck = card.ability.sigil[index].insert_in_deck
+            if insertDeck[1] and insertDeck[2] == "length" then
+                table.remove(self.cards, i)
+                table.insert(self.cards, #self.cards + 1, card)
+            elseif insertDeck[1] then
+                table.remove(self.cards, i)
+                table.insert(self.cards, insertDeck[2], card)
+            end
+        end
+    end
+end
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "cardarea.lua"
+pattern = '''
+elseif self.config.sort == 'order' then 
+    table.sort(self.cards, function (a, b) return (a.config.card.order or a.config.center.order) < (b.config.card.order or b.config.center.order) end )
+end
+'''
+position = "after"
+payload = '''
+for i = #self.cards, 1, -1 do
+    local card = self.cards[i]
+    if card.sigil ~= nil and card.ability and card.ability.sigil then
+        local index = nil
+        if card.sigil[1] ~= nil and card.ability.sigil[1] and card.ability.sigil[1].insert_in_deck then
+            if card.ability.sigil[1].insert_in_deck[1] ~= nil then
+                index = 1
+            end
+        end
+        if card.sigil[2] ~= nil and card.ability.sigil[2] and card.ability.sigil[2].insert_in_deck then
+            if card.ability.sigil[2].insert_in_deck[1] ~= nil then
+                index = 2
+            end
+        end
+
+        if index and card.sigil[index] ~= nil and card.ability.sigil[index].insert_in_deck ~= nil then
+            local insertDeck = card.ability.sigil[index].insert_in_deck
+            if insertDeck[1] and insertDeck[2] == "length" then
+                table.remove(self.cards, i)
+                table.insert(self.cards, #self.cards + 1, card)
+            elseif insertDeck[1] then
+                table.remove(self.cards, i)
+                table.insert(self.cards, insertDeck[2], card)
+            end
+        end
+    end
+end
+
+'''
+match_indent = true
+
+#[[patches]] 
+#[patches.pattern]
+#target = "functions/state_events.lua"
+#pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])"
+#position = "before"
+#payload = '''
+#if G.deck.cards ~= nil then
+#    for j = 1, #G.deck.cards do
+#        if G.deck.cards[j] ~= nil and G.deck.cards[j].sigil ~= nil then
+#            if G.deck.cards[j].sigil[1] ~= nil then
+#                if G.deck.cards[j].sigil[1] == "insc_corpse_eater" and G.deck.cards[j].ability.sigil[1].insert_in_deck ~= nil then 
+#                    G.deck.cards[j].ability.sigil[1].insert_in_deck[1] = true
+#                    G.deck:shuffle()
+#                end
+#            end
+#            if G.deck.cards[j].sigil[2] ~= nil then
+#                if G.deck.cards[j].sigil[2] == "insc_corpse_eater" and G.deck.cards[j].ability.sigil[2].insert_in_deck ~= nil then 
+#                    G.deck.cards[j].ability.sigil[2].insert_in_deck[1] = true
+#                    G.deck:shuffle()
+#                end
+#            end
+#        end
+#    end
+#end
+#'''
+#match_indent = true
+#
+#[[patches]] 
+#[patches.pattern]
+#target = "functions/state_events.lua"
+#pattern = '''
+#for i=1, hand_space do --draw cards from deckL
+#    if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK then 
+#        draw_card(G.deck,G.hand, i*100/hand_space,'up', true)
+#    else
+#        draw_card(G.deck,G.hand, i*100/hand_space,'up', true)
+#    end
+#end
+#'''
+#position = "after"
+#payload = '''
+#if G.hand ~= nil then
+#    for j = 1, #G.hand.cards do
+#        if G.hand.cards[j] ~= nil and G.hand.cards[j].sigil ~= nil then
+#            if G.hand.cards[j].sigil[1] ~= nil then 
+#                if G.hand.cards[j].sigil[1] == "insc_corpse_eater" and G.hand.cards[j].ability.sigil[1].insert_in_deck ~= nil then 
+#                    G.hand.cards[j].ability.sigil[1].insert_in_deck[1] = false
+#                    G.deck:shuffle()
+#                end
+#            end
+#            if G.hand.cards[j].sigil[2] ~= nil then 
+#                if G.hand.cards[j].sigil[2] == "insc_corpse_eater" and G.hand.cards[j].ability.sigil[1].insert_in_deck ~= nil then 
+#                    G.hand.cards[j].ability.sigil[2].insert_in_deck[1] = false
+#                    G.deck:shuffle()
+#                end
+#            end
+#        end
+#    end
+#end
+#'''
+#match_indent = true
+
 #draw from discard
 [[patches]]
 [patches.pattern]
@@ -149,8 +289,11 @@ target = "functions/state_events.lua"
 pattern = "draw_card(G.play,G.discard, it*100/play_count,'down', false, v)"
 position = "before"
 payload = '''
-if v.sigil ~= nil and ((v.sigil[1] ~= nil and v.ability.sigil[1].no_discard) or (v.sigil[2] ~= nil and v.ability.sigil[2].no_discard)) then
+if v.sigil ~= nil and ((v.sigil[1] ~= nil and (v.ability.sigil[1].no_discard_score ~= nil) and (v.ability.sigil[1].no_discard_score[1] and v.ability.sigil[1].no_discard_score[2] == "deck")) or (v.sigil[2] ~= nil and (v.ability.sigil[2].no_discard_score ~= nil) and (v.ability.sigil[2].no_discard_score[1] and v.ability.sigil[2].no_discard_score[2] == "deck"))) then
 	draw_card(G.play,G.deck, it*100/play_count,'down', false, v)
+	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
+elseif v.sigil ~= nil and ((v.sigil[1] ~= nil and (v.ability.sigil[1].no_discard_score ~= nil) and (v.ability.sigil[1].no_discard_score[1] and v.ability.sigil[1].no_discard_score[2] == "hand")) or (v.sigil[2] ~= nil and (v.ability.sigil[2].no_discard_score ~= nil) and (v.ability.sigil[2].no_discard_score[1] and v.ability.sigil[2].no_discard_score[2] == "hand"))) then
+	draw_card(G.play,G.hand, it*100/play_count,'down', false, v)
 	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
 else
 '''
@@ -166,13 +309,13 @@ end
 '''
 match_indent = true
 
-[[patches]]
+[[patches]] 
 [patches.pattern]
 target = "functions/state_events.lua"
 pattern = "draw_card(G.hand, G.discard, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])"
 position = "before"
 payload = '''
-if G.hand.highlighted[i].sigil ~= nil and ((G.hand.highlighted[i].sigil[1] ~= nil and G.hand.highlighted[i].ability.sigil[1].no_discard) or (G.hand.highlighted[i].sigil[2] ~= nil and G.hand.highlighted[i].ability.sigil[2].no_discard)) then 
+if G.hand.highlighted[i].sigil ~= nil and ((G.hand.highlighted[i].sigil[1] ~= nil and G.hand.highlighted[i].ability.sigil[1].no_discard_hand) or (G.hand.highlighted[i].sigil[2] ~= nil and G.hand.highlighted[i].ability.sigil[2].no_discard_hand)) then 
     draw_card(G.hand, G.deck, i*100/highlighted_count, 'down', false, G.hand.highlighted[i])
 	G.deck:shuffle('ndis'..G.GAME.round_resets.ante)
 else
@@ -219,31 +362,25 @@ pattern = "self.removed = true"
 position = "before"
 payload = '''
 if self.sigil ~= nil and self.area then
-    local index = nil
-    if self.sigil ~= nil then
-        if self.sigil[1] ~= nil then
-            index = 1
-        elseif self.sigil[2] ~= nil then
-            index = 2
-        end
-    end
-    if self.sigil[index] ~= nil and self.ability.sigil[index].no_destroy ~= nil then
-        if self.ability.sigil[index].no_destroy[1] and (self.area.config.type == 'deck' or self.area.config.type == 'joker' or self.area.config.type == 'play' or self.area.config.type == 'hand') then
-            G.E_MANAGER:add_event(Event({
-                func = function()
-                    self:start_materialize()
-                    return true
-                end
-            })) 
-            if self.ability.sigil[index].no_destroy[3] ~= nil then
-                self.ability.sigil[index].no_destroy[3] = self.ability.sigil[index].no_destroy[3] - 1
-                if self.ability.sigil[index].no_destroy[2] and self.ability.sigil[index].no_destroy[3] == 0 then
+    for index = 1, #self.sigil do
+        if self.sigil[index] ~= nil and self.ability.sigil[index].no_destroy ~= nil then
+            if self.ability.sigil[index].no_destroy[1] and (self.area.config.type == 'deck' or self.area.config.type == 'joker' or self.area.config.type == 'play' or self.area.config.type == 'hand') then
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        self:start_materialize()
+                        return true
+                    end
+                })) 
+                if self.ability.sigil[index].no_destroy[3] ~= nil then
+                    self.ability.sigil[index].no_destroy[3] = self.ability.sigil[index].no_destroy[3] - 1
+                    if self.ability.sigil[index].no_destroy[2] and self.ability.sigil[index].no_destroy[3] == 0 then
+                        self.ability.sigil[index].no_destroy[1] = false
+                    end 
+                elseif self.ability.sigil[index].no_destroy[2] then
                     self.ability.sigil[index].no_destroy[1] = false
-                end 
-            elseif self.ability.sigil[index].no_destroy[2] then
-                self.ability.sigil[index].no_destroy[1] = false
+                end
+	            return
             end
-	        return
         end
     end
 end
@@ -521,7 +658,7 @@ elseif _c.set == 'Sigil' then
 '''
 
 
-[[patches]]
+[[patches]] 
 [patches.pattern]
 target = 'functions/common_events.lua'
 pattern = '''new_card:set_seal(other.seal, true)'''
