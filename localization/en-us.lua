@@ -38,6 +38,22 @@
 				}
 			},
 		},
+		insc_Event = {
+			ev_insc_sacrifice ={
+				name="Sacrifice",
+				text={
+					"{C:red}Sacrifice{} a joker",
+					"for it's sigil",
+				},
+			},
+			ev_insc_campfire ={
+				name="Campfire",
+				text={
+					"{C:attention}Increase{} a jokers",
+					"stats",
+				},
+			},
+		},
 		Other={
 		  	insc_fecundity_sigil ={
 				name="Fecundity",

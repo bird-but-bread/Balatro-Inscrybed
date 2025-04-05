@@ -38,6 +38,76 @@ function Card:get_sigil(index)
     return false
 end
 
+function create_consumable(card_type,tag,message,extra, thing1, thing2)
+    extra=extra or {}
+    
+    G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+    G.E_MANAGER:add_event(Event({
+        trigger = 'before',
+        delay = 0.0,
+        func = (function()
+                local card = create_card(card_type,G.consumeables, nil, nil, thing1, thing2, extra.forced_key or nil, tag)
+                card:add_to_deck()
+                if extra.edition~=nil then
+                    card:set_edition(extra.edition,true,false)
+                end
+                if extra.eternal~=nil then
+                    card.ability.eternal=extra.eternal
+                end
+                if extra.perishable~=nil then
+                    card.ability.perishable = extra.perishable
+                    if tag=='v_epilogue' then
+                        card.ability.perish_tally=get_voucher('epilogue').config.extra
+                    else card.ability.perish_tally = G.GAME.perishable_rounds
+                    end
+                end
+                if extra.extra_ability~=nil then
+                    card.ability[extra.extra_ability]=true
+                end
+                G.consumeables:emplace(card)
+                G.GAME.consumeable_buffer = 0
+                if message~=nil then
+                    card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                end
+        return true
+    end)}))
+end
+
+function create_joker(card_type,tag,message,extra, rarity)
+    extra=extra or {}
+    
+    G.GAME.joker_buffer = G.GAME.joker_buffer + 1
+    G.E_MANAGER:add_event(Event({
+        trigger = 'before',
+        delay = 0.0,
+        func = (function()
+                local card = create_card(card_type, G.joker, nil, rarity, nil, nil, extra.forced_key or nil, tag)
+                card:add_to_deck()
+                if extra.edition~=nil then
+                    card:set_edition(extra.edition,true,false)
+                end
+                if extra.eternal~=nil then
+                    card.ability.eternal=extra.eternal
+                end
+                if extra.perishable~=nil then
+                    card.ability.perishable = extra.perishable
+                    if tag=='v_epilogue' then
+                        card.ability.perish_tally=get_voucher('epilogue').config.extra
+                    else card.ability.perish_tally = G.GAME.perishable_rounds
+                    end
+                end
+                if extra.extra_ability~=nil then
+                    card.ability[extra.extra_ability]=true
+                end
+                G.jokers:emplace(card)
+                G.GAME.joker_buffer = 0
+                if message~=nil then
+                    card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                end
+        return true
+    end)}))
+end
+
 insc_ability_calculate = function(card, equation, extra_value, exclusions, inclusions, do_round, only, extra_search)
   if do_round == nil then do_round = true end
   if only == nil then only = false end
@@ -80,17 +150,26 @@ insc_ability_calculate = function(card, equation, extra_value, exclusions, inclu
     return true
   end
 
+  local function process_table(t)
+      for key, value in pairs(t) do
+          if value ~= nil and should_process(key, value) then
+              if type(value) == "number" then
+                  t[key] = process_value(value)
+              elseif type(value) == "table" then
+                  process_table(value)  
+              end
+          end
+      end
+  end
+
+
   local search_table = extra_search and card[extra_search] or card.ability
 
   if search_table then
     if type(search_table) == "number" then
       search_table = process_value(search_table)
     elseif type(search_table) == "table" then
-      for key, value in pairs(search_table) do
-        if value ~= nil and should_process(key, value) then
-          search_table[key] = process_value(value)
-        end
-      end
+      process_table(search_table)
     end
   end
 end
@@ -160,8 +239,19 @@ insc_ability_get_items = function(card, equation, extra_value, exclusions, inclu
   return keys, values
 end
 
-
-
+local set_spritesref = Card.set_sprites
+function Card:set_sprites(_center, _front)
+    set_spritesref(self, _center, _front);
+    if _center and _center.insc_num_layer then
+        if _center then
+            self.children.insc_floating_sprite_num = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS[_center.atlas or _center.set], _center.insc_num_layer)
+            self.children.insc_floating_sprite_num.role.draw_major = self
+            self.children.insc_floating_sprite_num.states.hover.can = false
+            self.children.insc_floating_sprite_num.states.click.can = false
+        end
+    end
+end
+SMODS.draw_ignore_keys.insc_floating_sprite_num = true
 
 -- Death card stuff
 Deathcard.create_UIBox_select_summon_materials = function(card)
@@ -204,8 +294,10 @@ G.FUNCS.death_card_start = function(e)
         area = BalatroInscrybed.death_card_area
     }
     
+    local jokers = {}
     for i = #G.jokers.cards, 1, -1 do
         local card_ = G.jokers.cards[i]
+        table.insert(jokers, card_)
         G.jokers:remove_card(card_)
         BalatroInscrybed.chose_card_one:emplace(card_)
     end

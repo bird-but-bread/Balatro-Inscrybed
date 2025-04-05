@@ -71,7 +71,7 @@ BalatroInscrybed.Sigil {
     config = { odds = 4 },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=8, y=3},
+    pos = {x=3, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = { G.GAME.probabilities.normal or 1, self.config.odds } }--might be center.config.odds
     end,
@@ -113,7 +113,7 @@ BalatroInscrybed.Sigil {
     config = { },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=3, y=2},
+    pos = {x=7, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -138,63 +138,72 @@ BalatroInscrybed.Sigil {
     name = "insc_Repulsive",
     key = "repulsive",
     badge_colour = HEX("9fff80"),
-    config = { trigger = false, trigger2 = false },
+    config = { trigger = false, card = nil },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=6, y=2},
+    pos = {x=10, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
     calculate = function(self, card, context)
-        if G.hand ~= nil and ((not context.discard) and (not context.remove_playing_cards)) then
-            local index = nil
-            if card.sigil ~= nil then
-                if card.sigil[1] ~= nil and card.sigil[1] == self.key then
-                    index = 1
-                elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
-                    index = 2
-                end
-            end
-            local _card = nil
-            card.ability.sigil[index].trigger = false
+        if context.hand_drawn and context.cardarea == G.hand and (self.config.trigger == false or self.config.trigger == "nil") then
             for i = 1, #G.hand.cards do
-                if G.hand.cards[i].sigil ~= nil and card == G.hand.cards[i] then
-                    card.ability.sigil[index].trigger = true
-                    _card = G.hand.cards[i]
-                    break
-                end
-            end
-            if _card ~= nil then
-                if _card.sigil[index] ~= nil then
-                    if card.ability.sigil[index].trigger then
-                        if G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) and not card.ability.sigil[index].trigger2 then 
-                            card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('ph_boss_disabled')})
-                            G.GAME.blind:disable()
-                            card.ability.sigil[index].trigger2 = true
-                        end
+                if G.hand.cards[i].sigil ~= nil then
+                    if (G.hand.cards[i].sigil[1] ~= nil and G.hand.cards[i].sigil[1] == self.key) or (G.hand.cards[i].sigil[2] ~= nil and G.hand.cards[i].sigil[2] == self.key) then
+                        self.config.trigger = true
+                        return
                     end
-                end 
+                end
             end
         end
-        if (context.discard) or (context.remove_playing_cards) or (context.before and context.cardarea == G.play) then
-            if card ~= nil then
-                local index = nil
-                if card.sigil ~= nil then
-                    if card.sigil[1] ~= nil and card.sigil[1] == self.key then
-                        index = 1
-                    elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
-                        index = 2
+        if self.config.trigger ~= "nil" then
+            if context.before and context.cardarea == G.play and self.config.trigger then
+                for i = 1, #G.play.cards do
+                    if G.play.cards[i].sigil ~= nil then
+                        if (G.play.cards[i].sigil[1] ~= nil and G.play.cards[i].sigil[1] == self.key) or (G.play.cards[i].sigil[2] ~= nil and G.play.cards[i].sigil[2] == self.key) then
+                            self.config.trigger = false
+                            return
+                        end
                     end
                 end
-                if card.sigil[index] ~= nil then
-                    if G.GAME.blind and ((G.GAME.blind:get_type() == 'Boss')) then 
-                        local blind = G.GAME.blind
-                        blind.disabled = false
-                        G.GAME.blind:set_blind(blind, true, true)
-                        G.GAME.blind:set_text()
-                        card.ability.sigil[index].trigger2 = false
+            end
+            if context.remove_playing_cards and context.removed and self.config.trigger then
+                for i = 1, #context.removed do
+                    if context.removed[i].sigil ~= nil then
+                        if (context.removed[i].sigil[1] ~= nil and context.removed[i].sigil[1] == self.key) or (context.removed[i].sigil[2] ~= nil and context.removed[i].sigil[2] == self.key) then
+                            self.config.trigger = false
+                            return
+                        end
                     end
-                end 
+                end
+            end
+            if context.discard and self.config.trigger then
+                for i = 1, #G.hand.highlighted do
+                    if G.hand.highlighted[i].sigil ~= nil then
+                        if (G.hand.highlighted[i].sigil[1] ~= nil and G.hand.highlighted[i].sigil[1] == self.key) or (G.hand.highlighted[i].sigil[2] ~= nil and G.hand.highlighted[i].sigil[2] == self.key) then
+                            self.config.trigger = false
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end,
+    update = function(self, card, dt)
+        if self.config.trigger ~= "nil" then
+            if self.config.trigger then
+                if G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then 
+                    card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('ph_boss_disabled')})
+                    G.GAME.blind:disable()
+                end
+            elseif not self.config.trigger then
+                if G.GAME.blind and ((G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then 
+                    local blind = G.GAME.blind
+                    blind.disabled = false
+                    G.GAME.blind:set_blind(blind, true, true)
+                    G.GAME.blind:set_text()
+                    self.config.trigger = "nil"
+                end
             end
         end
     end
@@ -208,7 +217,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=1, y=3},
+    pos = {x=6, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -261,7 +270,7 @@ BalatroInscrybed.Sigil {
     config = { trigger = false },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=2, y=2},
+    pos = {x=6, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -298,7 +307,7 @@ BalatroInscrybed.Sigil {
     config = { trigger = false },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=4, y=6},
+    pos = {x=2, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -327,7 +336,7 @@ BalatroInscrybed.Sigil {
     end
 }
 
---Gift Bearererere
+--Gift Bearerer
 BalatroInscrybed.Sigil { 
     name = "insc_Gift_Bearer",
     key = "gifter",
@@ -335,7 +344,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=4, y=3},
+    pos = {x=9, y=2},
     loc_vars = function(self, info_queue, card)
     return { vars = {} }
     end,
@@ -365,7 +374,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=4, y=4},
+    pos = {x=10, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -395,7 +404,7 @@ BalatroInscrybed.Sigil {
     config = {xmult = 0, x_mult_mod = 1.5},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=2, y=4},
+    pos = {x=8, y=3},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -438,7 +447,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=10, y=3},
+    pos = {x=5, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -475,7 +484,7 @@ BalatroInscrybed.Sigil {
     config = { insert_in_deck = {false, "length"} },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=1, y=7},
+    pos = {x=10, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -504,7 +513,7 @@ BalatroInscrybed.Sigil {
     config = { no_discard_score = {false, "hand"} },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=3, y=4},
+    pos = {x=9, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -549,7 +558,7 @@ BalatroInscrybed.Sigil {
     config = { },
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=0, y=0},
+    pos = {x=5, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -583,7 +592,7 @@ BalatroInscrybed.Sigil {
     config = {trigger = false},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=1, y=8},
+    pos = {x=11, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -708,7 +717,7 @@ BalatroInscrybed.Sigil {
     config = {ants = 0, odds = 2},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=9, y=3},
+    pos = {x=4, y=3},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -812,7 +821,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=3, y=6},
+    pos = {x=1, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -847,7 +856,7 @@ BalatroInscrybed.Sigil {
     config = {ants = 0, odds = 4},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=9, y=3},
+    pos = {x=4, y=3},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -875,71 +884,17 @@ BalatroInscrybed.Sigil {
                         return
                     elseif i == 1 then
                         if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
-                            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-                                play_sound('tarot1')
-                                card:juice_up(0.3, 0.5)
-                                return true end }))
-			                local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3
-                            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.play.cards[i+1]:flip();play_sound('card1', percent);G.play.cards[i+1]:juice_up(0.3, 0.3);return true end }))
-		                    delay(0.2)
-			                local highlighted = G.play.cards[i+1]
-			                G.E_MANAGER:add_event(Event({
-				                trigger = "after",
-				                delay = 0.1,
-				                func = function()
-					                if highlighted then
-						                highlighted:set_sigil("insc_ant")
-					                end
-					                return true
-				                end,
-			                }))
-                            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.play.cards[i+1]:flip();return true end }))
+						    G.play.cards[i+1]:set_sigil("insc_ant", nil, false)
                         end
                     elseif i == #G.play.cards then
                         if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
-                            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-                                play_sound('tarot1')
-                                card:juice_up(0.3, 0.5)
-                                return true end }))
-			                local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3
-                            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.play.cards[i-1]:flip();play_sound('card1', percent);G.play.cards[i-1]:juice_up(0.3, 0.3);return true end }))
-		                    delay(0.2)
-			                local highlighted = G.play.cards[i-1]
-			                G.E_MANAGER:add_event(Event({
-				                trigger = "after",
-				                delay = 0.1,
-				                func = function()
-					                if highlighted then
-						                highlighted:set_sigil("insc_ant")
-					                end
-					                return true
-				                end,
-			                }))
-                            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.play.cards[i-1]:flip();return true end }))
+						    G.play.cards[i-1]:set_sigil("insc_ant", nil, false)
                         end
                     else
                         local cards = {G.play.cards[i-1], G.play.cards[i+1]}
                         for j = 1, #cards do
                             if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
-                                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-                                    play_sound('tarot1')
-                                    card:juice_up(0.3, 0.5)
-                                    return true end }))
-			                    local percent = 1.15 - (j-0.999)/(#cards-0.998)*0.3
-                                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() cards[j]:flip();play_sound('card1', percent);cards[j]:juice_up(0.3, 0.3);return true end }))
-		                        delay(0.2)
-			                    local highlighted = cards[j]
-			                    G.E_MANAGER:add_event(Event({
-				                    trigger = "after",
-				                    delay = 0.1,
-				                    func = function()
-					                    if highlighted then
-						                    highlighted:set_sigil("insc_ant")
-					                    end
-					                    return true
-				                    end,
-			                    }))
-                                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() cards[j]:flip();return true end }))
+                                cards[j]:set_sigil("insc_ant", nil, false)
                             end
                         end
                     end
@@ -957,7 +912,7 @@ BalatroInscrybed.Sigil {
     config = {no_discard_score = {true, "deck"}, no_discard_hand = true, no_destroy = {true, false}},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=1, y=2},
+    pos = {x=5, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -971,7 +926,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=7, y=6},
+    pos = {x=5, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1003,7 +958,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=6, y=6},
+    pos = {x=4, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1035,7 +990,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=8, y=6},
+    pos = {x=6, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1067,7 +1022,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=7, y=3},
+    pos = {x=2, y=3},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1114,7 +1069,7 @@ BalatroInscrybed.Sigil {
     config = {no_destroy = {true, true, 1}},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=5, y=0},
+    pos = {x=0, y=5},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1171,7 +1126,7 @@ BalatroInscrybed.Sigil {
     config = {chips = 30, mult = 15},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=9, y=6},
+    pos = {x=7, y=6},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -1226,7 +1181,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=6, y=0},
+    pos = {x=0, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1323,7 +1278,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=4, y=2},
+    pos = {x=8, y=1},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1349,7 +1304,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=4, y=1},
+    pos = {x=7, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1375,7 +1330,7 @@ BalatroInscrybed.Sigil {
     config = {mult = 7, circuit_active = false},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=10, y=4},
+    pos = {x=6, y=4},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -1485,7 +1440,7 @@ BalatroInscrybed.Sigil {
     config = { circuit_active = false, no_hand_remove = true, hands_left = nil, r_hands_left = nil, way_to_much_configs = 0},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=9, y=4},
+    pos = {x=5, y=4},
     loc_vars = function(self, info_queue, card)
         return { vars = { } }
     end,
@@ -1599,7 +1554,7 @@ BalatroInscrybed.Sigil {
     config = {x_mult = 1.5, circuit_active = false},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=8, y=4},
+    pos = {x=4, y=4},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -1709,7 +1664,7 @@ BalatroInscrybed.Sigil {
     config = {x_mult = 2},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=2, y=5},
+    pos = {x=9, y=4},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -1746,7 +1701,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=1, y=5},
+    pos = {x=8, y=4},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1789,7 +1744,7 @@ BalatroInscrybed.Sigil {
     config = {furcated = 1},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=0, y=5},
+    pos = {x=7, y=4},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -1857,7 +1812,7 @@ BalatroInscrybed.Sigil {
     config = {mult = 0, mult_mod = 5},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=5, y=8},
+    pos = {x=11, y=5},
     loc_vars = function(self, info_queue, card)
         local index = nil
         if card.sigil ~= nil then
@@ -1912,7 +1867,7 @@ BalatroInscrybed.Sigil {
     config = {extra = 2},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=3, y=0},
+    pos = {x=0, y=3},
     loc_vars = function(self, info_queue, card)
         return {
             vars = {self.config.extra+1}
@@ -1933,7 +1888,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=6, y=4},
+    pos = {x=2, y=4},
     loc_vars = function(self, info_queue, card)
         return {
             vars = {}
@@ -1986,7 +1941,7 @@ BalatroInscrybed.Sigil {
     config = {active = false, trigger = 0},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=8, y=5},
+    pos = {x=5, y=5},
     loc_vars = function(self, info_queue, card)
         return {
             vars = {}
@@ -2052,7 +2007,7 @@ BalatroInscrybed.Sigil {
     config = {},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=8, y=0},
+    pos = {x=11, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -2071,7 +2026,7 @@ BalatroInscrybed.Sigil {
     config = {always_scores = true,},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=9, y=7},
+    pos = {x=8, y=7},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -2085,7 +2040,7 @@ BalatroInscrybed.Sigil {
     config = {counts_as_enhance = "m_stone"},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=5, y=6},
+    pos = {x=3, y=6},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -2099,7 +2054,7 @@ BalatroInscrybed.Sigil {
     config = {furcated = 2},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=5, y=1},
+    pos = {x=8, y=0},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -2113,7 +2068,7 @@ BalatroInscrybed.Sigil {
     config = {furcated = 3},
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=2, y=0},
+    pos = {x=0, y=2},
     loc_vars = function(self, info_queue, card)
         return { vars = {} }
     end,
@@ -2130,7 +2085,7 @@ BalatroInscrybed.Sigil {
     end,
     atlas = 'sigils',
     atlas_extra = 'sigilsextra',
-    pos = {x=7, y=2},
+    pos = {x=1, y=2},
     calculate = function(self, card, context)
         if context.main_scoring and context.cardarea == G.play then
             return {

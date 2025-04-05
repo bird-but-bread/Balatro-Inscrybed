@@ -1,0 +1,251 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 5
+
+#States/ UI stuff
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.R, config={id = 'from_game_over', align = "cm", minw = 5, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = "notify_then_setup_run", shadow = true, focus_args = {nav = 'wide', snap_to = true}}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true, maxw = 4.8}, nodes={
+              {n=G.UIT.T, config={text = localize('b_start_new_run'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
+            }}
+          }},'''
+position = 'before'
+payload = '''{n=G.UIT.R, config={align = "cm", minw = 5, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = "death_card_start", shadow = true, focus_args = {nav = 'wide', snap_to = true}}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true, maxw = 4.8}, nodes={
+              {n=G.UIT.T, config={text = localize('b_create_death_card'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
+            }}
+          }},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''
+if type == 'Small' then
+    extras = create_UIBox_blind_tag(type, run_info)
+  elseif type == 'Big' then
+    extras = create_UIBox_blind_tag(type, run_info)
+'''
+position = 'at'
+payload = '''
+if type == 'Small' then
+    if G.GAME.round_resets.blind_event_visablity.Small then
+        extras = {n=G.UIT.R, config={align = "tm"},nodes={create_UIBox_blind_tag(type, run_info), insc_blind_extra_select(type, run_info)}}
+    else
+        local dt1 = DynaText({string = {{string = "Sacrificed", colour = G.C.DARK_EDITION}}, colours = {G.C.BLACK}, scale = 0.55, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 3})
+        extras = 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0.07, r = 0.1, colour = {0,0,0,0.12}, minw = 2.9}, nodes={
+              {n=G.UIT.R, config={align = "cm"}, nodes={
+                {n=G.UIT.O, config={object = dt1}},
+              }},
+            }},
+          }}
+    end
+elseif type == 'Big' then
+    if G.GAME.round_resets.blind_event_visablity.Big then
+        extras = {n=G.UIT.R, config={align = "tm"},nodes={create_UIBox_blind_tag(type, run_info), insc_blind_extra_select(type, run_info)}}
+    else
+        local dt1 = DynaText({string = {{string = "Sacrificed", colour = G.C.DARK_EDITION}}, colours = {G.C.BLACK}, scale = 0.55, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 3})
+        extras = 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0.07, r = 0.1, colour = {0,0,0,0.12}, minw = 2.9}, nodes={
+              {n=G.UIT.R, config={align = "cm"}, nodes={
+                {n=G.UIT.O, config={object = dt1}},
+              }},
+            }},
+          }}
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''
+G.GAME.round_resets.blind_tags.Small = get_next_tag_key()
+G.GAME.round_resets.blind_tags.Big = get_next_tag_key()
+'''
+position = 'after'
+payload = '''
+G.GAME.round_resets.blind_events.Small = get_next_event_key()
+G.GAME.round_resets.blind_events.Big = get_next_event_key()
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''
+G.GAME.blind_on_deck = skip_to
+'''
+position = 'after'
+payload = '''
+local _event = e.UIBox:get_UIE_by_ID('insc_event_container')
+if _event ~= nil then
+    _event:remove()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''
+G.STATE = G.STATES.BLIND_SELECT'''
+position = 'after'
+payload = '''
+G.GAME.round_resets.blind_event_visablity.Small = true
+G.GAME.round_resets.blind_event_visablity.Big = true
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+self.GAME.round_resets.blind_tags.Small = G.SETTINGS.tutorial_progress and G.SETTINGS.tutorial_progress.forced_tags and G.SETTINGS.tutorial_progress.forced_tags[1] or get_next_tag_key()
+self.GAME.round_resets.blind_tags.Big = G.SETTINGS.tutorial_progress and G.SETTINGS.tutorial_progress.forced_tags and G.SETTINGS.tutorial_progress.forced_tags[2] or get_next_tag_key()
+'''
+position = 'after'
+match_indent = true
+payload = '''
+self.GAME.round_resets.blind_events.Small = get_next_event_key()
+self.GAME.round_resets.blind_events.Big = get_next_event_key()
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+blind_states = {Small = 'Select', Big = 'Upcoming', Boss = 'Upcoming'},'''
+position = 'after'
+match_indent = true
+payload = '''
+blind_event_visablity = {Small = true, Big = true},
+event_state = {State = "", From_shop = false},
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+if not self.GAME.round_resets.blind_tags then
+    self.GAME.round_resets.blind_tags = {}
+end
+'''
+position = 'after'
+match_indent = true
+payload = '''
+if not self.GAME.round_resets.blind_events then
+    self.GAME.round_resets.blind_events = {}
+end
+'''
+
+#Sacrifice UI 
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''if self.STATE == self.STATES.SHOP then'''
+position = 'before'
+match_indent = true
+payload = '''
+if self.STATE == self.STATES.INSC_SACRIFICE then 
+    self:update_insc_sacrifice(dt)
+end
+'''
+
+#I don't think this works at all but the ui works so i'll leave it
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''function Game:update_shop(dt)'''
+position = 'before'
+match_indent = true
+payload = '''
+function Game:update_insc_sacrifice(dt)
+    if self.buttons then self.buttons:remove(); self.buttons = nil end
+    if self.shop then self.shop:remove(); self.shop = nil end
+    if not G.STATE_COMPLETE then
+        stop_use()
+        ease_background_colour_blind(G.STATES.INSC_SACRIFICE)
+        local sacrifice_exists = not not G.insc_sacrifice
+        G.insc_sacrifice = UIBox{
+            definition = G.UIDEF.insc_sacrifice(),
+            config = {align="bmi", offset = {x=0,y=G.ROOM.T.y + 29},major = G.hand, bond = 'Weak'}
+        }
+        G.STATE_COMPLETE = true
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                G.insc_sacrifice.alignment.offset.y = -5.3
+                G.insc_sacrifice.alignment.offset.x = 0
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.2,
+                    blockable = false,
+                    func = function()
+                        if math.abs(G.insc_sacrifice.T.y - G.insc_sacrifice.VT.y) < 3 then
+                            G.ROOM.jiggle = G.ROOM.jiggle + 3
+                            play_sound('cardFan2')
+                            print("lamo your wrong")
+                            return true
+                        end
+                    end}))
+                return true
+            end
+        }))
+    end
+end
+'''
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = '''
+if self.area and self.area:can_highlight(self) then
+'''
+position = 'before'
+match_indent = true
+payload = '''
+if G.hand ~= nil and G.jokers ~= nil and G.insc_sacrifice_joker ~= nil and G.insc_sacrifice_playing_card ~= nil and self ~= nil then
+    if G.GAME.round_resets.event_state.State == "Sacrifice" then
+        for i = 1, #G.hand.cards do
+            if G.hand.cards ~= nil and G.hand.cards[i] == self and #G.insc_sacrifice_playing_card.cards == 0 then
+                draw_card(G.hand, G.insc_sacrifice_playing_card, i*100/1,'up', true, self)
+            end
+        end
+        for i = 1, #G.insc_sacrifice_playing_card.cards do
+            if G.insc_sacrifice_playing_card.cards ~= nil and G.insc_sacrifice_playing_card.cards[i] == self and #G.insc_sacrifice_playing_card.cards == 1 then
+                draw_card(G.insc_sacrifice_playing_card,G.hand, i*100/1,'up', true, self)
+            end
+        end
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards ~= nil and G.jokers.cards[i] == self and #G.insc_sacrifice_joker.cards == 0 then
+                draw_card(G.jokers, G.insc_sacrifice_joker, i*100/1,'up', true, self)
+            end
+        end
+        for i = 1, #G.insc_sacrifice_joker.cards do
+            if G.insc_sacrifice_joker.cards ~= nil and G.insc_sacrifice_joker.cards[i] == self and #G.insc_sacrifice_joker.cards == 1 then
+                draw_card(G.insc_sacrifice_joker,G.jokers, i*100/1,'up', true, self)
+            end
+        end
+    end
+end
+if G.jokers ~= nil and G.insc_campfire_joker ~= nil and self ~= nil then
+    if G.GAME.round_resets.event_state.State == "Campfire" then
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards ~= nil and G.jokers.cards[i] == self and #G.insc_campfire_joker.cards == 0 then
+                draw_card(G.jokers, G.insc_campfire_joker, i*100/1,'up', true, self)
+            end
+        end
+        for i = 1, #G.insc_campfire_joker.cards do
+            if G.insc_campfire_joker.cards ~= nil and G.insc_campfire_joker.cards[i] == self and #G.insc_campfire_joker.cards == 1 then
+                draw_card(G.insc_campfire_joker,G.jokers, i*100/1,'up', true, self)
+            end
+        end
+    end
+end
+'''

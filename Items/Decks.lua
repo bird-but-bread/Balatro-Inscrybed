@@ -2,7 +2,7 @@ SMODS.Back {
     name = "insc-beast",
     key = "beast_deck",
     pos = { x = 0, y = 0 },
-    config = { extra = {check = true, mult = 10, consumables = {'c_lovers', 'c_lovers'}, } },
+    config = { extra = {check = true, mult = 10, } },
     loc_vars = function(self, info_queue, center)
         return { vars = { } }
     end,
@@ -36,6 +36,15 @@ SMODS.Back {
         if context.end_of_round then
             back.effect.config.extra.check = true
         end
+    end,
+    apply = function(self, card, context)
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                create_consumable("Tarot", nil, nil, {forced_key='c_lovers'})
+                create_consumable("Tarot", nil, nil, {forced_key='c_lovers'})
+                return true
+            end
+        }))
     end,
     atlas = "beast",
 }
