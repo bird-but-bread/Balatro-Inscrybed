@@ -1,5 +1,39 @@
  return{
 	descriptions={
+		Joker = {
+			j_insc_lesh_statue = {
+                name = "{C:insc_leshy}Leshy",
+                text = {
+					"The {C:red,E:1}Scrybe{} of {C:beasts,E:1}Beasts"
+                }
+            },
+			j_insc_po3_statue = {
+                name = "{C:insc_po3}PO3",
+                text = {
+					"The {C:red,E:1}Scrybe{} of {C:tech,E:1}Technology"
+                }
+            },
+			j_insc_grim_statue = {
+                name = "{C:insc_grimora}Grimora",
+                text = {
+					"The {C:red,E:1}Scrybe{} of the {C:dead,E:1}Dead"
+                }
+            },
+			j_insc_wiz_statue = {
+                name = "{C:insc_magnificus}Magnificus",
+                text = {
+					"The {C:red,E:1}Scrybe{} of {C:magicks,E:1}Magicks"
+                }
+            },
+			j_insc_captive_file = {
+                name = "{C:tech}Captive File",
+                text = {
+					"When death is prevented {C:red}destroy",
+					"a {C:attention}random{} Joker including itself",
+					"{C:inactive,s:0.8}(Prevents death)"
+                }
+            },
+		},
 		Back = {
             b_insc_beast_deck = {
                 name = "Beast Deck",
@@ -399,11 +433,82 @@
 					"{C:inactive}(Currently {C:red}X#1#{} {C:inactive}Mult)"
 				},
 			},
+			insc_bone_king_sigil ={
+				name = "Bone King",
+				text = {
+					"Gain {C:red}+1{} discard for a {C:attention}round{} upon",
+					"{C:attention}drawing{} a card bearing this sigil"
+				},
+			},
+			insc_battery_bearer_sigil ={
+				name = "Battery Bearer",
+				text = {
+					"Gain {C:blue}+1{} hand for a {C:attention}round{} upon",
+					"{C:attention}drawing{} a card bearing this sigil"
+				},
+			},
+			insc_scavenger_sigil ={
+				name = "Scavenger",
+				text = {
+					"If a card bearing this sigil is",
+					"{C:attention}held in hand{} at the {C:attention}end of round",
+					"recieve {C:money}$2{} for every {C:red}discard{} used",
+				},
+			},
+			insc_kraken_waterborne_sigil ={
+				name = "Kraken Waterborne",
+				text = {
+					"This card {C:attention}cannot{} be {C:red}debuffed",
+					"{C:attention}Retriggers{} an additional time",
+					"for {C:attention}every{} Tentacle/Kraken card",
+					"{C:inactive}(Currently {C:green}#1#{}{C:inactive} Times)"
+					
+				},
+			},
+			insc_dam_builder_sigil ={
+				name = "Dam Builder",
+				text = {
+					"When this card is {C:attention}scored{} an",
+					"additional {C:attention}two{} {C:dark_edition}Stone Cards",
+					"are added to the {C:attention}played{} hand"
+				},
+			},
+			insc_hostage_file_sigil ={
+				name = "Hostage File",
+				text = {
+					"When a card bearing this sigil is",
+					"{C:red}destroyed{} sell the {C:attention}left-most{} Joker",
+					"for twice it's {C:money}sell value{}"
+				},
+			},
+			insc_leader_sigil ={
+				name = "Leader",
+				text = {
+					"When {C:attention}scored{} add {C:mult}+5{} Mult to the",
+					"cards on the {C:attention}left{} and {C:attention}right"
+				},
+			},
+			insc_brittle_sigil ={
+				name = "Brittle",
+				text = {
+					"When a card bearing this Sigil is",
+					"{C:attention}scored{}, {C:green}#1# in #2#{} chance to break",
+					"{C:chips}+100{} Chips"
+				},
+			},
 		},
 	},
-	misc={	
+	misc={
 		labels={
+			insc_brittle_sigil = "Brittle Sigil",
+			insc_leader_sigil = "Leader Sigil",
 			insc_morsel_sigil = "Morsel Sigil",
+			insc_hostage_file_sigil = "Hostage File Sigil",
+			insc_dam_builder_sigil = "Dam Builder Sigil",
+			insc_kraken_waterborne_sigil = "Kraken Waterborne Sigil",
+			insc_scavenger_sigil = "Scavenger Sigil",
+			insc_battery_bearer_sigil = "Battery Bearer Sigil",
+			insc_bone_king_sigil = "Bone King Sigil",
 			insc_touch_death_sigil = "Touch of Death Sigil",
 			insc_energy_conduit_sigil = "Energy Sigil",
 			insc_handy_sigil = "Handy Sigil",

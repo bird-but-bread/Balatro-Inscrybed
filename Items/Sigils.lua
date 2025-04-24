@@ -61,7 +61,7 @@ BalatroInscrybed.Sigil = SMODS.GameObject:extend {
         
 }
 
--- Sigils
+--Sigils
 
 --fecundity 
 BalatroInscrybed.Sigil { 
@@ -129,6 +129,184 @@ BalatroInscrybed.Sigil {
                 end
                 return true end }))
             delay(0.6)
+        end
+    end
+}
+
+--Brittle
+BalatroInscrybed.Sigil { 
+    name = "insc_Brittle",
+    key = "brittle",
+    badge_colour = HEX("9fff80"),
+    config = { odds = 4, chips = 100 },
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=4, y=5},
+    loc_vars = function(self, info_queue, card)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = { G.GAME.probabilities.normal or 1, card.ability.sigil[index].odds, card.ability.sigil[index].chips } }
+    end,
+    calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        if context.main_scoring and context.cardarea == G.play then
+            SMODS.calculate_effect({chip_mod = card.ability.sigil[index].chips, message = localize{type='variable',key='a_chips',vars={card.ability.sigil[index].chips}}}, card)
+        end
+        if context.final_scoring_step and context.cardarea == G.play then
+            if pseudorandom('brittle') < G.GAME.probabilities.normal/card.ability.sigil[index].odds then
+                G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.1,
+                func = function() 
+                    card:shatter()
+                    return true end }))
+            end
+        end
+    end,
+}
+
+--Bone King
+BalatroInscrybed.Sigil { 
+    name = "insc_Bone_King",
+    key = "bone_king",
+    badge_colour = HEX("9fff80"),
+    config = { },
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=9, y=1},
+    loc_vars = function(self, info_queue, card)
+        return { vars = { } }
+    end,
+    calculate = function(self, card, context)
+        if context.hand_drawn then
+            for i = 1,#context.hand_drawn do
+                if context.hand_drawn[i] == card then
+                    ease_discard(1)
+                end
+            end
+        end
+    end
+}
+
+--Leader
+BalatroInscrybed.Sigil { 
+    name = "insc_Leader",
+    key = "leader",
+    badge_colour = HEX("9fff80"),
+    config = { },
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=10, y=4},
+    loc_vars = function(self, info_queue, card)
+        return { vars = { } }
+    end,
+    calculate = function(self, card, context)
+        if context.cardarea == G.play and context.main_scoring then
+            for i = 1, #G.play.cards do
+                if G.play.cards[i] == card then
+                    if #G.play.cards == 1 then
+                        return
+                    elseif i == 1 then
+						G.play.cards[i+1].ability.perma_mult = G.play.cards[i+1].ability.perma_mult + 5
+                    elseif i == #G.play.cards then
+						G.play.cards[i-1].ability.perma_mult = G.play.cards[i-1].ability.perma_mult + 5
+                    else
+                        local cards = {G.play.cards[i-1], G.play.cards[i+1]}
+                        for j = 1, #cards do
+                            cards[j].ability.perma_mult = cards[j].ability.perma_mult + 5
+                        end
+                    end
+                end
+            end
+        end
+    end,
+}
+
+--Hostage File
+BalatroInscrybed.Sigil { 
+    name = "insc_Hostage_File",
+    key = "hostage_file",
+    badge_colour = HEX("9fff80"),
+    config = { },
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=6, y=3},
+    loc_vars = function(self, info_queue, card)
+        return { vars = { } }
+    end,
+    calculate = function(self, card, context)
+        if context.remove_playing_cards and not context.blueprint then
+            for i = 1, #context.removed do
+                if context.removed[i] == card then
+                    if #G.jokers.cards >= 1 then
+                        local money = G.jokers.cards[1].cost
+                        G.jokers.cards[1]:start_dissolve()
+                        return{
+                            dollars = money
+                        }
+                    end
+                end
+            end
+        end
+    end
+}
+
+--Dam Builder
+BalatroInscrybed.Sigil { 
+    name = "insc_Dam_Builder",
+    key = "dam_builder",
+    badge_colour = HEX("9fff80"),
+    config = { trigger = true },
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=1, y=4},
+    loc_vars = function(self, info_queue, card)
+        return { vars = { } }
+    end,
+    calculate = function(self, card, context)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        if context.before and context.cardarea == G.play and card.ability.sigil[index].trigger then
+            local _card = copy_card(card, nil, nil, G.playing_card)
+            _card:set_ability(G.P_CENTERS.m_stone, nil)
+            _card.ability.sigil_destroy_self = true
+            _card:set_seal()
+            _card:set_sigil(nil, 1)
+            _card:set_sigil(nil, 2)
+            table.insert(context.scoring_hand, _card)
+            G.play:emplace(_card)
+            _card:highlight(true)
+            local _card_ = copy_card(card, nil, nil, G.playing_card)
+            _card_:set_ability(G.P_CENTERS.m_stone, nil)
+            _card_.ability.sigil_destroy_self = true
+            _card_:set_seal()
+            _card_:set_sigil(nil, 1)
+            _card_:set_sigil(nil, 2)
+            table.insert(context.scoring_hand, _card_)
+            G.play:emplace(_card_)
+            _card_:highlight(true)
+        end
+        if context.hand_drawn then
+            card.ability.sigil[index].trigger = true
         end
     end
 }
@@ -209,6 +387,111 @@ BalatroInscrybed.Sigil {
     end
 }
 
+--Kraken Waterborne
+BalatroInscrybed.Sigil { 
+    name = "insc_Kraken_Waterborne",
+    key = "kraken_waterborne",
+    badge_colour = HEX("9fff80"),
+    config = {tentacle = 0},
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=0, y=7},
+    loc_vars = function(self, info_queue, card)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        return { vars = {card.ability.sigil[index].tentacle} }
+    end,
+    calculate = function(self, card, context)
+        if context.cardarea == G.play and context.repetition then
+            local index = nil
+            if card.sigil ~= nil then
+                if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                    index = 1
+                elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                    index = 2
+                end
+            end
+            local retriggers = 0
+            for i = 1, card.ability.sigil[index].tentacle do
+                retriggers = retriggers + 1
+            end
+            if retriggers > 0 then
+                return {
+                    message = localize('k_again_ex'),
+                    repetitions = retriggers,
+                    card = card
+                }
+            end
+        end
+    end,
+    update = function(self, card, dt)
+        local index = nil
+        if card.sigil ~= nil then
+            if card.sigil[1] ~= nil and card.sigil[1] == self.key then
+                index = 1
+            elseif card.sigil[2] ~= nil and card.sigil[2] == self.key then
+                index = 2
+            end
+        end
+        card.ability.sigil[index].tentacle = 0
+        if G.hand ~= nil then
+            for i = 1, #G.hand.cards do
+                if G.hand.cards[i].sigil ~= nil then
+                    if G.hand.cards[i].sigil ~= nil then
+                        if G.hand.cards[i].sigil[1] ~= nil then
+                            if G.hand.cards[i].ability.sigil[1].tentacle then
+                                card.ability.sigil[index].tentacle = card.ability.sigil[index].tentacle + 1
+                            end
+                        end
+                        if G.hand.cards[i].sigil[2] ~= nil then
+                            if G.hand.cards[i].ability.sigil[2].tentacle then
+                                card.ability.sigil[index].tentacle = card.ability.sigil[index].tentacle + 1
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if G.play ~= nil then
+            for i = 1, #G.play.cards do
+                if G.play.cards[i].sigil ~= nil then
+                    if G.play.cards[i].sigil ~= nil then
+                        if G.play.cards[i].sigil[1] ~= nil then
+                            if G.play.cards[i].ability.sigil[1].tentacle then
+                                card.ability.sigil[index].tentacle = card.ability.sigil[index].tentacle + 1
+                            end
+                        end
+                        if G.play.cards[i].sigil[2] ~= nil then
+                            if G.play.cards[i].ability.sigil[2].tentacle then
+                                card.ability.sigil[index].tentacle = card.ability.sigil[index].tentacle + 1
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if G.jokers ~= nil then
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i].ability.insc_tentacle_trigger ~= nil and G.jokers.cards[i].ability.insc_tentacle_trigger then
+                    card.ability.sigil[index].tentacle = card.ability.sigil[index].tentacle + 1
+                end
+                if G.jokers.cards[i].ability.extra ~= nil and type(G.jokers.cards[i].ability.extra) == "table" and G.jokers.cards[i].ability.extra.insc_tentacle_trigger ~= nil and G.jokers.cards[i].ability.extra.insc_tentacle_trigger then
+                    card.ability.sigil[index].tentacle = card.ability.sigil[index].tentacle + 1
+                end
+            end
+        end
+        if card.debuff then
+            card.debuff = false
+        end
+    end
+}
+
 --Handy
 BalatroInscrybed.Sigil { 
     name = "insc_Handy",
@@ -260,6 +543,53 @@ BalatroInscrybed.Sigil {
             end
         end
     end,
+}
+
+--Scavenger
+BalatroInscrybed.Sigil { 
+    name = "insc_Scavenger",
+    key = "scavenger",
+    badge_colour = HEX("9fff80"),
+    config = {},
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=2, y=2},
+    loc_vars = function(self, info_queue, card)
+        return { vars = {} }
+    end,
+    calculate = function(self, card, context)
+        if context.playing_card_end_of_round and context.cardarea == G.hand then
+            if G.GAME.current_round.discards_used ~= 0 then
+                return {
+                    dollars = (G.GAME.current_round.discards_used*2),
+                    colour = G.C.MONEY
+                }
+            end
+        end
+    end,
+}
+
+--Battery Bearer
+BalatroInscrybed.Sigil { 
+    name = "insc_Battery_Bearer",
+    key = "battery_bearer",
+    badge_colour = HEX("9fff80"),
+    config = { },
+    atlas = 'sigils',
+    atlas_extra = 'sigilsextra',
+    pos = {x=6, y=7},
+    loc_vars = function(self, info_queue, card)
+        return { vars = { } }
+    end,
+    calculate = function(self, card, context)
+        if context.hand_drawn then
+            for i = 1,#context.hand_drawn do
+                if context.hand_drawn[i] == card then
+                    ease_hands_played(1)
+                end
+            end
+        end
+    end
 }
 
 --Mighty Leap
@@ -805,7 +1135,7 @@ BalatroInscrybed.Sigil {
                 if G.jokers.cards[i].ability.insc_ant_trigger ~= nil and G.jokers.cards[i].ability.insc_ant_trigger then
                     card.ability.sigil[index].ants = card.ability.sigil[index].ants + 1
                 end
-                if G.jokers.cards[i].ability.extra ~= nil and G.jokers.cards[i].ability.extra.insc_ant_trigger ~= nil and G.jokers.cards[i].ability.extra.insc_ant_trigger then
+                if G.jokers.cards[i].ability.extra ~= nil and type(G.jokers.cards[i].ability.extra) == "table" and G.jokers.cards[i].ability.extra.insc_ant_trigger ~= nil and G.jokers.cards[i].ability.extra.insc_ant_trigger then
                     card.ability.sigil[index].ants = card.ability.sigil[index].ants + 1
                 end
             end

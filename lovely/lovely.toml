@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 5
+priority = 0
 
 [[patches]]
 [patches.pattern]
@@ -14,6 +14,27 @@ insc_Event = {},
 '''
 match_indent = true
 
+#some sigils utils
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "if (G.P_CENTERS[(card.edition or {}).key] or {}).never_scores then return true end"
+position = "before"
+payload = '''
+if card.sigil ~= nil then
+    if card.sigil[1] ~= nil then
+        if card.ability.sigil[1].never_scores then
+            return true
+        end
+    end
+    if card.sigil[2] ~= nil then
+        if card.ability.sigil[2].never_scores then
+            return true
+        end
+    end
+end
+'''
+match_indent = true 
 
 [[patches]]
 [patches.pattern]
@@ -141,6 +162,11 @@ if self.sigil ~= nil then
         if obj.update and type(obj.update) == 'function' then
             obj:update(self, dt)
         end
+    end
+end
+if self.area == G.deck and self ~= nil then
+    if self.ability.sigil_destroy_self then
+        self:start_dissolve()
     end
 end
 '''
@@ -491,155 +517,70 @@ pattern = '''function Card:set_seal(_seal, silent, immediate)'''
 position = 'before'
 payload = '''
 function Card:set_sigil(_sigil, index, silent)
-    if (silent ~= nil or silent) then
-        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-            play_sound('tarot1')
-            self:juice_up(0.3, 0.5)
-            return true end }))
-		local percent = 1.15 - (1-0.999)/(1-0.998)*0.3
-        G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() self:flip();play_sound('card1', percent);self:juice_up(0.3, 0.3);return true end }))
-		delay(0.2)
-		local highlighted = self
-		G.E_MANAGER:add_event(Event({
-			trigger = "after",
-			delay = 0.1,
-			func = function()
-				if highlighted then
-					if index == nil then
-                        index = false
-                    end
-                    if self.sigil == nil then
-                        self.sigil = {}
-                    end
-                    if self.ability.sigil == nil then
-                        self.ability.sigil = {}
-                    end
-                    if self.sigil[1] == nil and not index then
-                        self.sigil[1] = nil
-                        if _sigil then
-                            self.sigil[1] = _sigil
-                            self.ability.sigil[1] = {}
-                            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                            if type(v) == 'table' then
-	                                self.ability.sigil[1][k] = copy_table(v)
-	                            else
-	                                self.ability.sigil[1][k] = v
-	                            end
-  	                        end
-                        end
-                    elseif self.sigil[2] == nil and not index then
-                        self.sigil[2] = nil
-                        if _sigil then
-                            self.sigil[2] = _sigil
-                            self.ability.sigil[2] = {}
-                            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                            if type(v) == 'table' then
-	                                self.ability.sigil[2][k] = copy_table(v)
-	                            else
-	                                self.ability.sigil[2][k] = v
-	                            end
-  	                        end
-                        end
-                    elseif not index then
-                        local iindex = math.random(1,2)
-                        self.sigil[iindex] = nil
-                        if _sigil then
-                            self.sigil[iindex] = _sigil
-                            self.ability.sigil[iindex] = {}
-                            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                            if type(v) == 'table' then
-	                                self.ability.sigil[iindex][k] = copy_table(v)
-	                            else
-	                                self.ability.sigil[iindex][k] = v
-	                            end
-  	                        end
-                        end
-                    else
-                        self.sigil[index] = nil
-                        if _sigil then
-                            self.sigil[index] = _sigil
-                            self.ability.sigil[index] = {}
-                            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                            if type(v) == 'table' then
-	                                self.ability.sigil[index][k] = copy_table(v)
-	                            else
-	                                self.ability.sigil[index][k] = v
-	                            end
-  	                        end
-                        end
-                    end
-                    self:set_cost()
-				end
-				return true
-			end,
-		}))
-        G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() self:flip();return true end }))
-    else
-        if index == nil then
-            index = false
-        end
-        if self.sigil == nil then
-            self.sigil = {}
-        end
-        if self.ability.sigil == nil then
-            self.ability.sigil = {}
-        end
-        if self.sigil[1] == nil and not index then
-            self.sigil[1] = nil
-            if _sigil then
-                self.sigil[1] = _sigil
-                self.ability.sigil[1] = {}
-                for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                if type(v) == 'table' then
-	                    self.ability.sigil[1][k] = copy_table(v)
-	                else
-	                    self.ability.sigil[1][k] = v
-	                end
-  	            end
-            end
-        elseif self.sigil[2] == nil and not index then
-            self.sigil[2] = nil
-            if _sigil then
-                self.sigil[2] = _sigil
-                self.ability.sigil[2] = {}
-                for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                if type(v) == 'table' then
-	                    self.ability.sigil[2][k] = copy_table(v)
-	                else
-	                    self.ability.sigil[2][k] = v
-	                end
-  	            end
-            end
-        elseif not index then
-            local iindex = math.random(1,2)
-            self.sigil[iindex] = nil
-            if _sigil then
-                self.sigil[iindex] = _sigil
-                self.ability.sigil[iindex] = {}
-                for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                if type(v) == 'table' then
-	                    self.ability.sigil[iindex][k] = copy_table(v)
-	                else
-	                    self.ability.sigil[iindex][k] = v
-	                end
-  	            end
-            end
-        else
-            self.sigil[index] = nil
-            if _sigil then
-                self.sigil[index] = _sigil
-                self.ability.sigil[index] = {}
-                for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	                if type(v) == 'table' then
-	                    self.ability.sigil[index][k] = copy_table(v)
-	                else
-	                    self.ability.sigil[index][k] = v
-	                end
-  	            end
-            end
-        end
-        self:set_cost()
+    if index == nil then
+        index = false
     end
+    if self.sigil == nil then
+        self.sigil = {}
+    end
+    if self.ability.sigil == nil then
+        self.ability.sigil = {}
+    end
+    if self.sigil[1] == nil and not index then
+        self.sigil[1] = nil
+        if _sigil then
+            self.sigil[1] = _sigil
+            self.ability.sigil[1] = {}
+            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+	            if type(v) == 'table' then
+	                self.ability.sigil[1][k] = copy_table(v)
+	            else
+	                self.ability.sigil[1][k] = v
+	            end
+  	        end
+        end
+    elseif self.sigil[2] == nil and not index then
+        self.sigil[2] = nil
+        if _sigil then
+            self.sigil[2] = _sigil
+            self.ability.sigil[2] = {}
+            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+	            if type(v) == 'table' then
+	                self.ability.sigil[2][k] = copy_table(v)
+	            else
+	                self.ability.sigil[2][k] = v
+	            end
+  	        end
+        end
+    elseif not index then
+        local iindex = math.random(1,2)
+        self.sigil[iindex] = nil
+        if _sigil then
+            self.sigil[iindex] = _sigil
+            self.ability.sigil[iindex] = {}
+            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+	            if type(v) == 'table' then
+	                self.ability.sigil[iindex][k] = copy_table(v)
+	            else
+	                self.ability.sigil[iindex][k] = v
+	            end
+  	        end
+        end
+    else
+        self.sigil[index] = nil
+        if _sigil then
+            self.sigil[index] = _sigil
+            self.ability.sigil[index] = {}
+            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+	            if type(v) == 'table' then
+	                self.ability.sigil[index][k] = copy_table(v)
+	            else
+	                self.ability.sigil[index][k] = v
+	            end
+  	        end
+        end
+    end
+    self:set_cost()
 end'''
 match_indent = true
 

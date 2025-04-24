@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 5
+priority = 0
 
 #States/ UI stuff
 [[patches]]
@@ -18,6 +18,275 @@ payload = '''{n=G.UIT.R, config={align = "cm", minw = 5, padding = 0.1, r = 0.1,
               {n=G.UIT.T, config={text = localize('b_create_death_card'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
             }}
           }},'''
+match_indent = true
+
+#Scribe Selection
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''self.HUD:recalculate()'''
+position = 'before'
+payload = '''
+G.FUNCS.overlay_menu({
+    definition = G.UIDEF.insc_scribe_selection()
+})
+SMODS.add_card{
+    key = "j_insc_lesh_statue",
+    area = G.insc_scribe_lesh,
+    no_edition = true
+}
+SMODS.add_card{
+    key = "j_insc_po3_statue",
+    area = G.insc_scribe_po3,
+    no_edition = true
+}
+SMODS.add_card{
+    key = "j_insc_grim_statue",
+    area = G.insc_scribe_grim,
+    no_edition = true
+}
+SMODS.add_card{
+    key = "j_insc_wiz_statue",
+    area = G.insc_scribe_wiz,
+    no_edition = true
+}
+G.insc_scribe_lesh.cards[1].children.select_button = UIBox{
+  definition = G.UIDEF.insc_scribe_select_button(),
+  config = {
+    align="bm",
+    offset = {x=-0.1,y=-0.15},
+    major = G.insc_scribe_lesh.cards[1],
+    bond = 'Weak',
+    parent = G.insc_scribe_lesh.cards[1],
+    scribe = G.insc_scribe_lesh.cards[1].ability
+  }
+}
+G.insc_scribe_po3.cards[1].children.select_button = UIBox{
+  definition = G.UIDEF.insc_scribe_select_button(),
+  config = {
+    align="bm",
+    offset = {x=0,y=-0.15},
+    major = G.insc_scribe_po3.cards[1],
+    bond = 'Weak',
+    parent = G.insc_scribe_po3.cards[1],
+    scribe = G.insc_scribe_po3.cards[1].ability
+  }
+}
+G.insc_scribe_grim.cards[1].children.select_button = UIBox{
+  definition = G.UIDEF.insc_scribe_select_button(),
+  config = {
+    align="bm",
+    offset = {x=0.1,y=-0.15},
+    major = G.insc_scribe_grim.cards[1],
+    bond = 'Weak',
+    parent = G.insc_scribe_grim.cards[1],
+    scribe = G.insc_scribe_grim.cards[1].ability
+  }
+}
+G.insc_scribe_wiz.cards[1].children.select_button = UIBox{
+  definition = G.UIDEF.insc_scribe_select_button(),
+  config = {
+    align="bm",
+    offset = {x=0.15,y=-0.15},
+    major = G.insc_scribe_wiz.cards[1],
+    bond = 'Weak',
+    parent = G.insc_scribe_wiz.cards[1],
+    scribe = G.insc_scribe_wiz.cards[1].ability
+  }
+}
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.facing == 'front' and (not self.states.drag.is or G.CONTROLLER.HID.touch) and not self.no_ui and not G.debug_tooltip_toggle then'''
+position = 'before'
+payload = '''
+if self.config.center.alt_ui then
+    if self.facing == 'front' and (not self.states.drag.is or G.CONTROLLER.HID.touch) and not self.no_ui and not G.debug_tooltip_toggle then 
+        if self.children.alert and not self.config.center.alerted then
+            self.config.center.alerted = true
+            G:save_progress()
+        end
+           
+        self.ability_UIBox_table = self:generate_UIBox_ability_table()
+        self.config.h_popup = G.UIDEF.insc_alt_card_h_popup(self)
+        self.config.h_popup_config = self:insc_alt_align_h_popup()
+
+        Node.hover(self)
+    end
+end
+if self.config.center.no_ui == nil then
+    self.config.center.no_ui = false
+end
+if self.config.center.no_ui then
+    return
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.children.h_popup then'''
+position = 'before'
+payload = '''
+if self.config.center.alt_ui and self.children.h_popup then
+    self.config.h_popup_config = self:insc_alt_align_h_popup()
+    return
+end
+'''
+match_indent = true
+
+#Colors
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''enhanced = G.C.SECONDARY_SET.Enhanced'''
+position = 'before'
+payload = '''
+beasts = HEX("ab9a5a"),
+tech = HEX("78d8ff"),
+dead = HEX("a0b29d"),
+magicks = HEX("ff5aee"),
+'''
+match_indent = true
+
+#Booster reroll button
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''
+{n=G.UIT.R, config={align = "cm", minw = 2.8, minh = 1.6, r=0.15,colour = G.C.GREEN, button = 'reroll_shop', func = 'can_reroll', hover = true,shadow = true}, nodes = {
+    {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'x', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
+        {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+            {n=G.UIT.T, config={text = localize('k_reroll'), scale = 0.4, colour = G.C.WHITE, shadow = true}},
+        }},
+        {n=G.UIT.R, config={align = "cm", maxw = 1.3, minw = 1}, nodes={
+            {n=G.UIT.T, config={text = localize('$'), scale = 0.7, colour = G.C.WHITE, shadow = true}},
+            {n=G.UIT.T, config={ref_table = G.GAME.current_round, ref_value = 'reroll_cost', scale = 0.75, colour = G.C.WHITE, shadow = true}},
+        }}
+    }}
+}},
+'''
+position = 'after'
+payload = '''
+{n=G.UIT.R, config={align = "cm", minw = 2.8, minh = 0.8, r=0.15,colour = G.C.BLUE, button = 'reroll_booster_shop', func = 'can_reroll_boosters', hover = true,shadow = true}, nodes = {
+    {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'x', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
+        {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+            {n=G.UIT.T, config={text = localize('k_reroll'), scale = 0.4, colour = G.C.WHITE, shadow = true}},
+        }},
+        {n=G.UIT.R, config={align = "cm", maxw = 1.3, minw = 1}, nodes={
+            {n=G.UIT.O, config={w=0.5,h=0.5 , object = get_foil_sprite(), hover = true, can_collide = false}},
+            {n=G.UIT.B, config={w=0.1,h=0.1}},
+            {n=G.UIT.T, config={ref_table = G.GAME.current_round, ref_value = 'reroll_foil_cost', scale = 0.75, colour = G.C.WHITE, shadow = true}},
+        }}
+    }}
+}},
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''
+if area == G.shop_jokers and G.SETTINGS.tutorial_progress and G.SETTINGS.tutorial_progress.forced_shop and G.SETTINGS.tutorial_progress.forced_shop[#G.SETTINGS.tutorial_progress.forced_shop] then
+        local t = G.SETTINGS.tutorial_progress.forced_shop
+        local _center = G.P_CENTERS[t[#t]] or G.P_CENTERS.c_empress
+        local card = Card(area.T.x + area.T.w/2, area.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, _center, {bypass_discovery_center = true, bypass_discovery_ui = true})
+        t[#t] = nil
+        if not t[1] then G.SETTINGS.tutorial_progress.forced_shop = nil end
+        
+        create_shop_card_ui(card)
+        return card
+'''
+position = 'after'
+payload = '''
+elseif area == G.shop_booster then
+    local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+    G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[get_pack('shop_pack').key], {bypass_discovery_center = true, bypass_discovery_ui = true})
+    create_shop_card_ui(card, 'Booster', G.shop_booster)
+    return card
+'''
+match_indent = true
+
+#Shop button resize
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''
+if self.flipping == 'f2b' then
+'''
+position = 'before'
+payload = '''
+if G.shop ~= nil and G.shop.definition.nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].nodes[2].config.minh ~= 0.8 then
+    G.shop.definition.nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].nodes[2].config.minh = 0.8
+    G.shop.definition.nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].nodes[1].config.minh = 0.8
+    G.shop:recalculate()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''
+G.STATE = G.STATES.BLIND_SELECT
+'''
+position = 'before'
+payload = '''
+G.GAME.current_round.reroll_foil_cost = G.GAME.round_resets.reroll_foil_cost
+G.GAME.current_round.reroll_foil_cost_increase = 0
+'''
+match_indent = true
+
+#End of round foil calc & visuals
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''
+ease_dollars(G.GAME.current_round.dollars)
+'''
+position = 'before'
+payload = '''
+ease_foil(G.GAME.current_round.foil)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+add_round_eval_row({name = 'bottom', dollars = dollars})
+'''
+position = 'before'
+payload = '''
+local foil_scale = toNum(G.GAME.blind.chips/5)
+local foil_amt_1 = toNum(G.GAME.chips)
+local foil_amt_2 = toNum(G.GAME.blind.chips)
+local foil_amt = foil_amt_1-foil_amt_2
+local num = math.floor(foil_amt/foil_scale)
+if num >= 1 then
+    local foil_sprite = get_foil_sprite()
+    insc_add_custom_round_eval_row("Overkill", tostring(num), nil, nil, foil_sprite)
+    G.GAME.current_round.foil = num
+end
+'''
+match_indent = true
+
+[[patches]] 
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{
+            label = localize('b_vouchers'),
+            tab_definition_function = G.UIDEF.used_vouchers,
+        },'''
+position = 'after'
+payload = '''{
+            label = "Currencies",
+            tab_definition_function = G.UIDEF.insc_extra_currenicies,
+        },'''
 match_indent = true
 
 [[patches]]
@@ -117,7 +386,7 @@ self.GAME.round_resets.blind_events.Small = get_next_event_key()
 self.GAME.round_resets.blind_events.Big = get_next_event_key()
 '''
 
-[[patches]]
+[[patches]] #G.Game.round_resets
 [patches.pattern]
 target = 'game.lua'
 pattern = '''
@@ -127,6 +396,34 @@ match_indent = true
 payload = '''
 blind_event_visablity = {Small = true, Big = true},
 event_state = {State = "", From_shop = false},
+reroll_foil_cost = 5,
+'''
+
+[[patches]] #G.Game.current_round
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+reroll_cost_increase = 0,
+'''
+position = 'after'
+match_indent = true
+payload = '''
+reroll_foil_cost = 5,
+foil = 0,
+reroll_foil_cost_increase = 0,
+'''
+
+[[patches]] #G.Game 
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+unused_discards = 0,'''
+position = 'after'
+match_indent = true
+payload = '''
+foil = 0,
+bankrupt_foil_at = 0,
+selected_scrybe = "",
 '''
 
 [[patches]]
@@ -201,6 +498,7 @@ function Game:update_insc_sacrifice(dt)
 end
 '''
 
+#Event Movement functions
 [[patches]]
 [patches.pattern]
 target = "card.lua"

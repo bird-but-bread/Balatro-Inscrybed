@@ -8,6 +8,12 @@ SMODS.Atlas {
     py = 97
 }
 SMODS.Atlas {
+    key = "scribe_backs",
+    path = "ChosenScribe.png",
+    px = 73,
+    py = 98
+}
+SMODS.Atlas {
     key = "sigilsextra",
     path = "SigilAtlasExtra.png",
     px = 73,
@@ -56,8 +62,9 @@ BalatroInscrybed = SMODS.current_mod
 Deathcard = {}
 BalatroInscrybed.Sigils = {}
 BalatroInscrybed.insc_Events = {}
+G.shared_insc_scribes = {}
 
-assert(SMODS.load_file("items/utility.lua"))()
+assert(SMODS.load_file("items/Utils/utility.lua"))()
 assert(SMODS.load_file("Items/Sigils.lua"))()
 assert(SMODS.load_file("Items/Jokers.lua"))()
 assert(SMODS.load_file("Items/Decks.lua"))()
@@ -65,6 +72,27 @@ assert(SMODS.load_file("Items/spectral.lua"))()
 assert(SMODS.load_file("Items/Events.lua"))()
 assert(SMODS.load_file("Items/BaseEdits.lua"))()
 assert(SMODS.load_file("Items/Utils/EventUI.lua"))()
+
+SMODS.Gradient {
+    key = 'leshy',
+    colours = {HEX("1e5e2c"), HEX("2c6638"), HEX("3b7748")},
+    cycle = 5
+}
+SMODS.Gradient {
+    key = 'po3',
+    colours = {HEX("3cb4ff"), HEX("009cfd"), HEX("5ecefe")},
+    cycle = 5
+}
+SMODS.Gradient {
+    key = 'grimora',
+    colours = {HEX("748d67"), HEX("839689"), HEX("86a367")},
+    cycle = 5
+}
+SMODS.Gradient {
+    key = 'magnificus',
+    colours = {HEX("9af8e2"), HEX("ff5aee"), HEX("fee9c6")},
+    cycle = 10
+}
 
 SMODS.DrawStep {
     key = 'sigil',
@@ -76,6 +104,19 @@ SMODS.DrawStep {
         end
     end,
     conditions = { vortex = false, facing = 'front' },
+}
+
+SMODS.DrawStep {
+    key = 'selected_scribe',
+    order = 10,
+    func = function(self)
+        if G.GAME.selected_scrybe ~= "" and self.area == G.deck then
+            local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+            G.shared_insc_scribes[G.GAME.selected_scrybe].role.draw_major = self
+            G.shared_insc_scribes[G.GAME.selected_scrybe]:draw_shader('dissolve', nil, nil, true, self.children.center, 0.25*scale_mod, 0, nil, -0.1)
+        end
+    end,
+    conditions = { vortex = false, facing = 'back' },
 }
 
 SMODS.DrawStep {
@@ -161,6 +202,10 @@ SMODS.DrawStep {
 function SMODS.current_mod.reset_game_globals(run_start)
 	if run_start then
 		G.GAME.insc_extra_draw = 0
+        G.shared_insc_scribes["Leshy"] = Sprite(0,0,G.CARD_W,G.CARD_H,G.ASSET_ATLAS["insc_scribe_backs"], {x=0,y=0})
+        G.shared_insc_scribes["PO3"] = Sprite(0,0,G.CARD_W,G.CARD_H,G.ASSET_ATLAS["insc_scribe_backs"], {x=1,y=0})
+        G.shared_insc_scribes["Grimora"] = Sprite(0,0,G.CARD_W,G.CARD_H,G.ASSET_ATLAS["insc_scribe_backs"], {x=0,y=1})
+        G.shared_insc_scribes["Magnificus"] = Sprite(0,0,G.CARD_W,G.CARD_H,G.ASSET_ATLAS["insc_scribe_backs"], {x=1,y=1})
 	end
 end
 
