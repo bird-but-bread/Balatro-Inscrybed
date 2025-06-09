@@ -47,6 +47,6 @@ local beast_deck = {
             end
         }))
     end,
-    atlas = "beast",
+    atlas = "leshy_cards",
 }
 return {name = {"Decks"}, items = {beast_deck}}

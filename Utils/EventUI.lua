@@ -466,6 +466,17 @@ end
 G.FUNCS.insc_change_scribe = function(e)
     local sribe = e.parent.parent.config.parent.children.select_button.parent.children.select_button.config.scribe.scribe --why tho
     G.GAME.selected_scrybe = sribe
+    if G.GAME.selected_scrybe == "Leshy" then
+        for i = 1, 3 do
+            if #G.jokers.cards < G.jokers.config.card_limit then 
+                local card_ = create_card('Joker', G.jokers, nil, nil, nil, nil, "j_insc_squirrel", 'leshy_replaced')
+                card_:add_to_deck()
+                G.jokers:emplace(card_)
+                card_:start_materialize()
+                G.GAME.joker_buffer = 0
+            end
+        end
+    end
     if G.OVERLAY_MENU ~= nil then
         G.OVERLAY_MENU:remove()
         G.OVERLAY_MENU = nil

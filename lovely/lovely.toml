@@ -732,25 +732,3 @@ payload = '''
     end
 
 '''
-
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''-- TARGET: evaluate your own general effects'''
-position = 'before'
-match_indent = true
-payload = '''
-    if card.sigil ~= nil and card.sigil[1] ~= nil and not card.ability.extra_enhancement then
-        local sigils = card:calculate_sigil(context, 1)
-        if sigils then
-            ret.sigils = sigils
-        end
-    end
-    if card.sigil ~= nil and card.sigil[2] ~= nil and not card.ability.extra_enhancement then
-        local sigils = card:calculate_sigil(context, 2)
-        if sigils then
-            ret.sigils = sigils
-        end
-    end
-'''

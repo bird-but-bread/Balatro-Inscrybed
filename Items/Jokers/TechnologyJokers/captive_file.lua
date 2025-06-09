@@ -19,6 +19,7 @@ local captive_file = {
     end,
     yes_pool_flag = 'insc_tech_card',
     discovered = false,
+    eternal_compat = false,
     rarity = 1,
     cost = 20,
     blueprint_compat = false,

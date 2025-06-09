@@ -52,7 +52,7 @@ SMODS.Atlas {
     py = 190
 }
 SMODS.Atlas {
-    key = "beast",
+    key = "leshy_cards",
     path = "beast_sprites.png",
     px = 71,
     py = 95
@@ -71,10 +71,11 @@ BalatroInscrybed.Sigils = {}
 BalatroInscrybed.insc_Events = {}
 G.shared_insc_scribes = {}
 
-assert(SMODS.load_file("Utils/utility.lua"))()
-assert(SMODS.load_file("Utils/BaseEdits.lua"))()
+assert(SMODS.load_file("Utils/Utility.lua"))()
 assert(SMODS.load_file("Utils/EventUI.lua"))() 
+assert(SMODS.load_file("Utils/BaseEdits.lua"))()
 assert(SMODS.load_file("Utils/Gameobjects.lua"))()
+assert(SMODS.load_file("Utils/Contexts.lua"))()
 
 local folders = NFS.getDirectoryItems(mod_path.."Items")
 local objects = {}
@@ -143,6 +144,23 @@ end)
 
 for _, curr_obj in ipairs(objects) do
     load_items(curr_obj)
+end
+
+local game_main_menu_ref = Game.main_menu
+function Game:main_menu(change_context)
+    local ret = game_main_menu_ref(self, change_context)
+    G.SPLASH_BACK:define_draw_steps({
+        {
+            shader = "splash",
+            send = {
+                { name = "time", ref_table = G.TIMERS, ref_value = "REAL_SHADER" },
+                { name = "vort_speed", val = 0.4 },
+                { name = "colour_1", ref_table = G.C.BalatroInscrybed, ref_value = "DARK_ORANGE" },
+                { name = "colour_2", ref_table = G.C, ref_value = "BLACK" },
+            },
+        },
+    })
+    return ret
 end
 
 SMODS.Gradient {

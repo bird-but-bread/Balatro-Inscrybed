@@ -1,6 +1,7 @@
  return{
 	descriptions={
 		Joker = {
+			-- Other Jokers
 			j_insc_lesh_statue = {
                 name = "{C:insc_leshy}Leshy",
                 text = {
@@ -25,12 +26,78 @@
 					"The {C:red,E:1}Scrybe{} of {C:magicks,E:1}Magicks"
                 }
             },
+			-- Technology Jokers
 			j_insc_captive_file = {
-                name = "{C:tech}Captive File",
+                name = "Captive File",
                 text = {
 					"When death is prevented {C:red}destroy",
 					"a {C:attention}random{} Joker including itself",
 					"{C:inactive,s:0.8}(Prevents death)"
+                }
+            },
+			-- Beast Jokers
+			j_insc_squirrel = {
+                name = "Squirrel",
+                text = {
+					"Does nothing but will",
+					"{C:attention}always{} be free"
+                }
+            },
+			j_insc_aquasquirrel = {
+                name = "Aquasquirrel",
+                text = {
+					"Does nothing but is",
+					"{C:attention}free{} in the shop"
+                }
+            },
+			j_insc_bee = {
+                name = "Bee",
+                text = {
+					"Played {C:spades}Spade{} cards gain",
+					"{C:chips}+#1#{} Chips permanently",
+					"Chip amount granted",
+					"increases by {C:attention}#1#{} for",
+					"every bee joker or sigil",
+					"{C:inactive}(Currently {C:chips}+#2#{} {C:inactive}Chips)",
+                }
+            },
+			j_insc_beehive = {
+                name = "Beehive",
+                text = {
+					"Upon {C:money}selling{} this Joker",
+					"gain {C:attention}#1#{} copies of the Bee"
+                }
+            },
+			j_insc_bat = {
+                name = "Bat",
+                text = {
+					"Discarded {C:hearts}Heart{} cards",
+					"become {C:spades}Spades"
+                }
+            },
+			j_insc_black_goat = {
+                name = "Black Goat",
+                text = {
+					"When this joker is {C:red}destroyed{} or",
+					"{C:money}sold{} it is done so {C:attention}three{} times"
+                }
+            },
+			j_insc_alpha = {
+                name = "Alpha",
+                text = {
+					"This Joker has Mult {C:attention}equal{}",
+					"to all Jokers {C:dark_edition}rarity",
+					"{C:inactive}({C:common}+5{}{C:inactive}->{C:uncommon}+10{}{C:inactive}->{C:rare}+20{}{C:inactive}->{C:legendary}+50{}{C:inactive})",
+					"{C:inactive}(Currently {C:mult}+#1#{} {C:inactive}Mult)",
+                }
+            },
+			j_insc_adder = {
+                name = "Adder",
+                text = {
+					"{X:mult,C:white}X#1#{} Mult, {C:attention}Retriggers{} an additional",
+					"time for each Joker {C:red}destroyed{}",
+					"not {C:money}sold",
+					"{C:inactive}(Currently {C:attention}#2#{} {C:inactive}Retriggers)",
                 }
             },
 		},
@@ -47,30 +114,7 @@
             },
 		},
 		Spectral = {
-			c_insc_sigilapplyfec = {
-				name = "Fecundity",
-				text = {
-					"Add a {C:red}Fecundity Sigil",
-					"to #1# {C:attention}selected cards{}",
-					"in your hand",
-				}
-			},
-			c_insc_sigilapplygibe = {
-				name = "Gift Bearer",
-				text = {
-					"Add a {C:red}Gift Bearer Sigil",
-					"to #1# {C:attention}selected cards{}",
-					"in your hand",
-				}
-			},
-			c_insc_sigilapplyove = {
-				name = "Overclocked",
-				text = {
-					"Add a {C:red}Overclocked Sigil",
-					"to #1# {C:attention}selected cards{}",
-					"in your hand",
-				}
-			},
+			
 		},
 		insc_Event = {
 			ev_insc_sacrifice ={
@@ -89,12 +133,24 @@
 			},
 		},
 		Other={
+			-- Sigils
 		  	insc_fecundity_sigil ={
 				name="Fecundity",
 				text={
 					"When a card bearing this Sigil is {C:attention}scored{}",
 					"{C:green}#1# in #2#{} chance",
 					"to create a {C:attention}copy{}",
+				},
+			},
+			insc_bees_within_sigil ={
+				name="Bees Within",
+				text={
+					"When a card bearing",
+					"this sigil is {C:red}discarded{}",
+					"create a {C:attention}Bee{}, {C:green}#1# in #2#{}",
+					"chance to create a",
+					"{C:attention}Beehive{} instead",
+					"{C:inactive}(Must have room)",
 				},
 			},
 		  	insc_gifter_sigil ={
@@ -500,6 +556,7 @@
 	},
 	misc={
 		labels={
+			insc_bees_within_sigil = "Bees Within Sigil",
 			insc_brittle_sigil = "Brittle Sigil",
 			insc_leader_sigil = "Leader Sigil",
 			insc_morsel_sigil = "Morsel Sigil",
@@ -556,8 +613,9 @@
 		dictionary = {
 			b_create_death_card = "Create Death Card",
 			ml_edition_sigil_enhancement_explanation = {
-					"Playing cards may each have one",
-					"Enhancement, Edition, Sigil, and Seal"
+					"Playing cards may each have two",
+					"Sigils, and one Enhancement, Edition,",
+					"and Seal"
 			},
 			insc_swap = 'Swap!',
 		}

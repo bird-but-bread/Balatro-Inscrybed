@@ -28,6 +28,7 @@ pattern = '''self.HUD:recalculate()'''
 position = 'before'
 payload = '''
 G.FUNCS.overlay_menu({
+    config = {no_esc = true},
     definition = G.UIDEF.insc_scribe_selection()
 })
 SMODS.add_card{

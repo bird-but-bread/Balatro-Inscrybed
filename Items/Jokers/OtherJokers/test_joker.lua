@@ -1,5 +1,6 @@
 local deathcard = {
     object_type = "Joker",
+    ignore = true,
     name = "insc-deathcard",
     key = "deathcard",
     pos = { x = 0, y = 0 },

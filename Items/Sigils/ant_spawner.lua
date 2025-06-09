@@ -30,20 +30,21 @@ local ant_spawner = {
             end
             for i = 1, #G.play.cards do
                 if G.play.cards[i] == card then
+                    local sigil = card.ability.sigil[index]
                     if #G.play.cards == 1 then
                         return
                     elseif i == 1 then
-                        if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
+                        if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / sigil.odds then
 						    G.play.cards[i+1]:set_sigil("insc_ant", nil, false)
                         end
                     elseif i == #G.play.cards then
-                        if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
+                        if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / sigil.odds then
 						    G.play.cards[i-1]:set_sigil("insc_ant", nil, false)
                         end
                     else
                         local cards = {G.play.cards[i-1], G.play.cards[i+1]}
                         for j = 1, #cards do
-                            if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
+                            if pseudorandom('ant_spawner') < G.GAME.probabilities.normal / sigil.odds then
                                 cards[j]:set_sigil("insc_ant", nil, false)
                             end
                         end

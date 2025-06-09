@@ -1,0 +1,61 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 214748364
+
+[[patches]] #G.Game.current_round
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+reroll_cost_increase = 0,
+'''
+position = 'after'
+match_indent = true
+payload = '''
+-- N/A
+'''
+
+[[patches]]  
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+reset_castle_card()
+'''
+position = 'after'
+match_indent = true
+payload = '''
+-- N/A
+'''
+
+[[patches]] #G.GAME 
+[patches.pattern]
+target = 'game.lua'
+pattern = '''
+unused_discards = 0,'''
+position = 'after'
+match_indent = true 
+payload = '''
+-- N/A
+'''
+
+[[patches]] #Colors
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''enhanced = G.C.SECONDARY_SET.Enhanced'''
+position = 'before'
+payload = '''
+-- N/A
+'''
+match_indent = true
+
+[[patches]] #Colors
+[patches.pattern]
+target = 'globals.lua'
+pattern = '''MULT = HEX('FE5F55'),'''
+position = 'before'
+payload = '''
+BalatroInscrybed = {
+	DARK_ORANGE = HEX('FF6A1A'),
+},
+'''
+match_indent = true

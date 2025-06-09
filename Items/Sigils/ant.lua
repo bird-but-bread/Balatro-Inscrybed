@@ -29,8 +29,9 @@ local ant = {
                 end
             end
             local retriggers = 0
+            local sigil = card.ability.sigil[index]
             for i = 1, card.ability.sigil[index].ants do
-                if pseudorandom('ant') < G.GAME.probabilities.normal / card.ability.sigil[index].odds then
+                if pseudorandom('ant') < G.GAME.probabilities.normal / sigil.odds then
                     retriggers = retriggers + 1
                 end
             end

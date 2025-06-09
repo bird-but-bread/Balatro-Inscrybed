@@ -31,7 +31,8 @@ local brittle = {
             SMODS.calculate_effect({chip_mod = card.ability.sigil[index].chips, message = localize{type='variable',key='a_chips',vars={card.ability.sigil[index].chips}}}, card)
         end
         if context.final_scoring_step and context.cardarea == G.play then
-            if pseudorandom('brittle') < G.GAME.probabilities.normal/card.ability.sigil[index].odds then
+            local sigil = card.ability.sigil[index]
+            if pseudorandom('brittle') < G.GAME.probabilities.normal/sigil.odds then
                 G.E_MANAGER:add_event(Event({
                 trigger = 'after',
                 delay = 0.1,
