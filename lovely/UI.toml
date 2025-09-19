@@ -27,74 +27,83 @@ target = 'game.lua'
 pattern = '''self.HUD:recalculate()'''
 position = 'before'
 payload = '''
-G.FUNCS.overlay_menu({
-    config = {no_esc = true},
-    definition = G.UIDEF.insc_scribe_selection()
-})
-SMODS.add_card{
-    key = "j_insc_lesh_statue",
-    area = G.insc_scribe_lesh,
-    no_edition = true
-}
-SMODS.add_card{
-    key = "j_insc_po3_statue",
-    area = G.insc_scribe_po3,
-    no_edition = true
-}
-SMODS.add_card{
-    key = "j_insc_grim_statue",
-    area = G.insc_scribe_grim,
-    no_edition = true
-}
-SMODS.add_card{
-    key = "j_insc_wiz_statue",
-    area = G.insc_scribe_wiz,
-    no_edition = true
-}
-G.insc_scribe_lesh.cards[1].children.select_button = UIBox{
-  definition = G.UIDEF.insc_scribe_select_button(),
-  config = {
-    align="bm",
-    offset = {x=-0.1,y=-0.15},
-    major = G.insc_scribe_lesh.cards[1],
-    bond = 'Weak',
-    parent = G.insc_scribe_lesh.cards[1],
-    scribe = G.insc_scribe_lesh.cards[1].ability
-  }
-}
-G.insc_scribe_po3.cards[1].children.select_button = UIBox{
-  definition = G.UIDEF.insc_scribe_select_button(),
-  config = {
-    align="bm",
-    offset = {x=0,y=-0.15},
-    major = G.insc_scribe_po3.cards[1],
-    bond = 'Weak',
-    parent = G.insc_scribe_po3.cards[1],
-    scribe = G.insc_scribe_po3.cards[1].ability
-  }
-}
-G.insc_scribe_grim.cards[1].children.select_button = UIBox{
-  definition = G.UIDEF.insc_scribe_select_button(),
-  config = {
-    align="bm",
-    offset = {x=0.1,y=-0.15},
-    major = G.insc_scribe_grim.cards[1],
-    bond = 'Weak',
-    parent = G.insc_scribe_grim.cards[1],
-    scribe = G.insc_scribe_grim.cards[1].ability
-  }
-}
-G.insc_scribe_wiz.cards[1].children.select_button = UIBox{
-  definition = G.UIDEF.insc_scribe_select_button(),
-  config = {
-    align="bm",
-    offset = {x=0.15,y=-0.15},
-    major = G.insc_scribe_wiz.cards[1],
-    bond = 'Weak',
-    parent = G.insc_scribe_wiz.cards[1],
-    scribe = G.insc_scribe_wiz.cards[1].ability
-  }
-}
+if G.OVERLAY_MENU == nil and G.GAME.selected_scrybe == "" then
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        blockable = false,
+        func = function() 
+            G.FUNCS.overlay_menu({
+                config = {no_esc = true},
+                definition = G.UIDEF.insc_scribe_selection()
+            })
+            SMODS.add_card{
+                key = "j_insc_lesh_statue",
+                area = G.insc_scribe_lesh,
+                no_edition = true
+            }
+            SMODS.add_card{
+                key = "j_insc_po3_statue",
+                area = G.insc_scribe_po3,
+                no_edition = true
+            }
+            SMODS.add_card{
+                key = "j_insc_grim_statue",
+                area = G.insc_scribe_grim,
+                no_edition = true
+            }
+            SMODS.add_card{
+                key = "j_insc_wiz_statue",
+                area = G.insc_scribe_wiz,
+                no_edition = true
+            }
+            G.insc_scribe_lesh.cards[1].children.select_button = UIBox{
+                definition = G.UIDEF.insc_scribe_select_button(),
+                config = {
+                align="bm",
+                offset = {x=-0.1,y=-0.15},
+                major = G.insc_scribe_lesh.cards[1],
+                bond = 'Weak',
+                parent = G.insc_scribe_lesh.cards[1],
+                scribe = G.insc_scribe_lesh.cards[1].ability
+                }
+            }
+            G.insc_scribe_po3.cards[1].children.select_button = UIBox{
+                definition = G.UIDEF.insc_scribe_select_button(),
+                config = {
+                align="bm",
+                offset = {x=0,y=-0.15},
+                major = G.insc_scribe_po3.cards[1],
+                bond = 'Weak',
+                parent = G.insc_scribe_po3.cards[1],
+                scribe = G.insc_scribe_po3.cards[1].ability
+                }
+            }
+            G.insc_scribe_grim.cards[1].children.select_button = UIBox{
+                definition = G.UIDEF.insc_scribe_select_button(),
+                config = {
+                align="bm",
+                offset = {x=0.1,y=-0.15},
+                major = G.insc_scribe_grim.cards[1],
+                bond = 'Weak',
+                parent = G.insc_scribe_grim.cards[1],
+                scribe = G.insc_scribe_grim.cards[1].ability
+                }
+            }
+            G.insc_scribe_wiz.cards[1].children.select_button = UIBox{
+                definition = G.UIDEF.insc_scribe_select_button(),
+                config = {
+                align="bm",
+                offset = {x=0.15,y=-0.15},
+                major = G.insc_scribe_wiz.cards[1],
+                bond = 'Weak',
+                parent = G.insc_scribe_wiz.cards[1],
+                scribe = G.insc_scribe_wiz.cards[1].ability
+                }
+            }
+            return true 
+        end 
+    }))
+end
 '''
 match_indent = true
 

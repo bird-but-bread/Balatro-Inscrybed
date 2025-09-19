@@ -91,6 +91,26 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/utils.lua"]'
+pattern = "if k == 'm_wild' or G.P_CENTERS[k].any_suit then return true end"
+position = "before"
+payload = '''
+if k == 'm_stone' and next(SMODS.find_card("j_insc_beaver")) then return true end
+'''
+match_indent = true 
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "if k == 'm_stone' or G.P_CENTERS[k].no_suit then is_stone = true end"
+position = "before"
+payload = '''
+if k == 'm_stone' and next(SMODS.find_card("j_insc_beaver")) then return false end
+'''
+match_indent = true 
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
 pattern = "local enhancements = {}"
 position = "after"
 payload = '''
@@ -103,6 +123,13 @@ if card.sigil ~= nil then
     if card.sigil[2] ~= nil then
         if card.ability.sigil[2].counts_as_enhance then
             enhancements[card.ability.sigil[2].counts_as_enhance] = true
+        end
+    end
+end
+if card.ability ~= nil then
+    if card.ability.counts_as_enhance ~= nil then
+        for i = 1, #card.ability.counts_as_enhance do
+            enhancements[card.ability.counts_as_enhance[i]] = true
         end
     end
 end
@@ -489,11 +516,13 @@ target = 'game.lua'
 pattern = '''G.FILE_HANDLER = G.FILE_HANDLER or {}'''
 position = 'before'
 payload = '''
-for k, v in pairs(self.P_SIGILS) do
-    G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
-end
-for k, v in pairs(self.P_INSC_EVENTS) do
-    G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
+if self ~= nil then
+    for k, v in pairs(self.P_SIGILS) do
+        G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
+    end
+    for k, v in pairs(self.P_INSC_EVENTS) do
+        G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
+    end
 end
 '''
 match_indent = true
@@ -517,71 +546,41 @@ pattern = '''function Card:set_seal(_seal, silent, immediate)'''
 position = 'before'
 payload = '''
 function Card:set_sigil(_sigil, index, silent)
-    if index == nil then
-        index = false
+    if not self.sigil then self.sigil = {} end
+    if not self.ability.sigil then self.ability.sigil = {} end
+
+    if self.sigil[1] == _sigil or self.sigil[2] == _sigil then
+        return
     end
-    if self.sigil == nil then
-        self.sigil = {}
-    end
-    if self.ability.sigil == nil then
-        self.ability.sigil = {}
-    end
-    if self.sigil[1] == nil and not index then
-        self.sigil[1] = nil
-        if _sigil then
-            self.sigil[1] = _sigil
-            self.ability.sigil[1] = {}
-            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	            if type(v) == 'table' then
-	                self.ability.sigil[1][k] = copy_table(v)
-	            else
-	                self.ability.sigil[1][k] = v
-	            end
-  	        end
-        end
-    elseif self.sigil[2] == nil and not index then
-        self.sigil[2] = nil
-        if _sigil then
-            self.sigil[2] = _sigil
-            self.ability.sigil[2] = {}
-            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	            if type(v) == 'table' then
-	                self.ability.sigil[2][k] = copy_table(v)
-	            else
-	                self.ability.sigil[2][k] = v
-	            end
-  	        end
-        end
-    elseif not index then
-        local iindex = math.random(1,2)
-        self.sigil[iindex] = nil
-        if _sigil then
-            self.sigil[iindex] = _sigil
-            self.ability.sigil[iindex] = {}
-            for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	            if type(v) == 'table' then
-	                self.ability.sigil[iindex][k] = copy_table(v)
-	            else
-	                self.ability.sigil[iindex][k] = v
-	            end
-  	        end
+
+    if index then
+        self.sigil[index] = _sigil
+        self.ability.sigil[index] = {}
+
+        for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
+            self.ability.sigil[index][k] = type(v) == 'table' and copy_table(v) or v
         end
     else
-        self.sigil[index] = nil
-        if _sigil then
-            self.sigil[index] = _sigil
-            self.ability.sigil[index] = {}
+        local slot = nil
+        if not self.sigil[1] then
+            slot = 1
+        elseif not self.sigil[2] then
+            slot = 2
+        end
+
+        if slot then
+            self.sigil[slot] = _sigil
+            self.ability.sigil[slot] = {}
+
             for k, v in pairs(G.P_SIGILS[_sigil].config or {}) do
-	            if type(v) == 'table' then
-	                self.ability.sigil[index][k] = copy_table(v)
-	            else
-	                self.ability.sigil[index][k] = v
-	            end
-  	        end
+                self.ability.sigil[slot][k] = type(v) == 'table' and copy_table(v) or v
+            end
         end
     end
+
     self:set_cost()
-end'''
+end
+'''
 match_indent = true
 
 [[patches]]

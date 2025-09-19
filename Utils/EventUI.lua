@@ -488,15 +488,19 @@ G.FUNCS.insc_sac_sigil = function(e)
         local jokerConfig = G.insc_sacrifice_joker.cards[1].ability
         if jokerConfig.insc_sacrifice_sigils ~= nil then
             if #jokerConfig.insc_sacrifice_sigils >= 1 then
-                for i = 1, #jokerConfig.insc_sacrifice_sigils do
-                    if jokerConfig.insc_sacrifice_sigils[i] ~= nil then
-                        for j = 1, #G.jokers.cards do
-                            G.jokers.cards[j]:calculate_joker({ insc_sacrificing = true })
+                if G.insc_sacrifice_playing_card.cards[1].sigil == nil or (jokerConfig.insc_sacrifice_sigils[1] ~= nil and can_apply_sigil(G.insc_sacrifice_playing_card, jokerConfig.insc_sacrifice_sigils[1])) or (jokerConfig.insc_sacrifice_sigils[2] ~= nil and can_apply_sigil(G.insc_sacrifice_playing_card, jokerConfig.insc_sacrifice_sigils[2])) then
+                    for i = 1, #jokerConfig.insc_sacrifice_sigils do
+                        if jokerConfig.insc_sacrifice_sigils[i] ~= nil then
+                            for j = 1, #G.jokers.cards do
+                                G.jokers.cards[j]:calculate_joker({ insc_sacrificing = true })
+                            end
+                            G.insc_sacrifice_playing_card.cards[1]:set_sigil("insc_" .. jokerConfig.insc_sacrifice_sigils[i], nil, nil)
+                            G.insc_sacrifice_joker.cards[1]:start_dissolve()
+                            delay(0.2)
+                            if i ~= 2 then
+                                draw_card(G.insc_sacrifice_playing_card,G.hand, i*100/1,'up', true, G.insc_sacrifice_playing_card.cards[1])
+                            end
                         end
-                        G.insc_sacrifice_playing_card.cards[1]:set_sigil("insc_" .. jokerConfig.insc_sacrifice_sigils[i], nil, i == 2)
-                        G.insc_sacrifice_joker.cards[1]:start_dissolve()
-                        delay(0.2)
-                        draw_card(G.insc_sacrifice_playing_card,G.hand, i*100/1,'up', true, G.insc_sacrifice_playing_card.cards[1])
                     end
                 end
             end
@@ -561,7 +565,6 @@ function G.UIDEF.insc_extra_currenicies()
       }}
     }}
 end
-
 
 function insc_blind_extra_select(blind_choice, run_info) 
     G.GAME.round_resets.blind_events = G.GAME.round_resets.blind_events or {}
@@ -667,7 +670,7 @@ end
           play_sound('coin2')
           play_sound('other1')
           
-          for i = 1, G.GAME.shop.joker_max - #G.shop_booster.cards do
+          for i = 1, ((G.GAME.modifiers.extra_boosters or 0) + 2) - #G.shop_booster.cards do
             local new_shop_card = create_card_for_shop(G.shop_booster)
             G.shop_booster:emplace(new_shop_card)
             new_shop_card:juice_up()

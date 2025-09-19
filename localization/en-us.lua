@@ -100,6 +100,28 @@
 					"{C:inactive}(Currently {C:attention}#2#{} {C:inactive}Retriggers)",
                 }
             },
+			j_insc_beaver = {
+                name = "Beaver",
+                text = {
+					'{C:attention}Stone Cards{} are considered',
+					'{C:attention}Wild Cards{} and all suits'
+                }
+            },
+			j_insc_bloodhound = {
+                name = "Bloodhound",
+                text = {
+					'{C:attention}Level up{} played hand if all',
+					'{C:attention}scoring{} cards are {C:hearts}hearts'
+                }
+            },
+			j_insc_bullfrog = {
+                name = "Bullfrog",
+                text = {
+					'The {C:attention}highest{} rank scored {C:diamonds}diamond',
+					'card gives {C:attention}double{} its rank as',
+					'{C:mult}Mult'
+                }
+            },
 		},
 		Back = {
             b_insc_beast_deck = {

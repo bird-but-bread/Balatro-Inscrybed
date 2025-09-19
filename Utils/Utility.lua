@@ -28,6 +28,33 @@ create_UIBox_your_collection_sigil = function()
     })
 end
 
+function can_apply_sigil(card, sigil_name)
+    local tempcard = card
+    if tempcard.sigil == nil then return true end
+    if not tempcard.sigil then return true end
+
+    if tempcard.sigil[1] == nil then
+        tempcard.sigil[1] = false
+    end
+    if tempcard.sigil[2] == nil then
+        tempcard.sigil[2] = false
+    end
+
+    if tempcard.sigil[1] == "insc_" .. sigil_name[1] or tempcard.sigil[2] == "insc_" .. sigil_name[1] then
+        return false
+    end
+    if tempcard.sigil[1] == "insc_" .. sigil_name[2] or tempcard.sigil[2] == "insc_" .. sigil_name[2] then
+        return false
+    end
+
+    if not tempcard.sigil[1] or not tempcard.sigil[2] then
+        return true
+    end
+
+    return false
+end
+
+
 function Card:get_sigil(index)
 	if self.sigil == nil then
         return false
@@ -374,6 +401,15 @@ function Card:set_sprites(_center, _front)
             self.children.insc_floating_sprite_num.states.hover.can = false
             self.children.insc_floating_sprite_num.states.click.can = false
         end
+        if self.config.center.discovered or self.bypass_discovery_center then
+            self.children.floating_sprite_thing = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS['insc_tech_border'], {x = 0, y = 0})
+            self.children.floating_sprite_thing.states.hover = self.states.hover
+            self.children.floating_sprite_thing.states.click = self.states.click
+            self.children.floating_sprite_thing.states.drag = self.states.drag
+            self.children.floating_sprite_thing.states.collide.can = false
+            self.children.floating_sprite_thing:set_role({major = self, role_type = 'Glued', draw_major = self})
+        end
+        self.draw_bypass = {floating_sprite_thing = true}
     end
 end
 SMODS.draw_ignore_keys.insc_floating_sprite_num = true

@@ -63,6 +63,16 @@ SMODS.Atlas {
     px = 640,
     py = 720
 }
+SMODS.Atlas { 
+    key = 'blinds', 
+    path = 'BlindChips.png', 
+    px = 34, 
+    py = 34, 
+    frames = 21, 
+    atlas_table = 'ANIMATION_ATLAS' 
+}
+SMODS.Atlas({key = 'tech_border', path = 'JokerBorder.png', px = 71, py = 95})
+SMODS.Shader({key = 'bordered', path = 'borderedeffect.fs'})
 BalatroInscrybed = SMODS.current_mod
 local mod_path = ''..BalatroInscrybed.path
 
@@ -133,6 +143,27 @@ table.sort(objects, function(a, b)
         if not obj.items then return math.huge end
         local lowest = math.huge
         for _, item in ipairs(obj.items) do
+            if item.order and item.order == 1 or not item.order then
+                if item.insc_type then
+                    if item.insc_type == 'None' then
+                        item.order = 2
+                    elseif item.insc_type == 'Insect' then
+                        item.order = 52
+                    elseif item.insc_type == 'Reptile' then
+                        item.order = 102
+                    elseif item.insc_type == 'Hooved' then
+                        item.order = 152
+                    elseif item.insc_type == 'Canine' then
+                        item.order = 202
+                    elseif item.insc_type == 'Avian' then
+                        item.order = 252
+                    elseif item.insc_type == 'Multiple' then
+                        item.order = 252
+                    else
+                        item.order = 352
+                    end
+                end
+            end
             if item.order and item.order < lowest then
                 lowest = item.order
             end
@@ -144,23 +175,6 @@ end)
 
 for _, curr_obj in ipairs(objects) do
     load_items(curr_obj)
-end
-
-local game_main_menu_ref = Game.main_menu
-function Game:main_menu(change_context)
-    local ret = game_main_menu_ref(self, change_context)
-    G.SPLASH_BACK:define_draw_steps({
-        {
-            shader = "splash",
-            send = {
-                { name = "time", ref_table = G.TIMERS, ref_value = "REAL_SHADER" },
-                { name = "vort_speed", val = 0.4 },
-                { name = "colour_1", ref_table = G.C.BalatroInscrybed, ref_value = "DARK_ORANGE" },
-                { name = "colour_2", ref_table = G.C, ref_value = "BLACK" },
-            },
-        },
-    })
-    return ret
 end
 
 SMODS.Gradient {
@@ -236,7 +250,7 @@ SMODS.DrawStep {
     key = 'floating_sprite',
     order = 60,
     func = function(self)
-        if self.config.center.soul_pos and (self.config.center.discovered or self.bypass_discovery_center) then
+        if self.config.center.soul_pos and self.children.floating_sprite ~= nil and (self.config.center.discovered or self.bypass_discovery_center) then
             local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
             local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
 
