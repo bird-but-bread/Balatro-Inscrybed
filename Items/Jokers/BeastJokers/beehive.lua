@@ -1,7 +1,8 @@
 local beehive = {
     object_type = "Joker",
-    name = "insc_beehive",
+    name = "Beehive",
     key = "beehive",
+    insc_type = "Insect",
     pos = { x = 2, y = 2 },
     config = { insc_sacrifice_sigils = {"bees_within"}, extra = { copies = 2 } },
     loc_vars = function(self, info_queue, card)

@@ -1,7 +1,8 @@
 local bat = {
     object_type = "Joker",
-    name = "insc_bat",
+    name = "Bat",
     key = "bat",
+    insc_type = "None",
     pos = { x = 3, y = 1 },
     config = { insc_sacrifice_sigils = {"airborne"}, extra = { } },
     loc_vars = function(self, info_queue, card)

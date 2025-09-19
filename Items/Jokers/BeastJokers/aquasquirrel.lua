@@ -1,7 +1,8 @@
 local aquasquirrel = {
     object_type = "Joker",
-    name = "insc_aquasquirrel",
+    name = "Aquasquirrel",
     key = "aquasquirrel",
+    insc_type = "None",
     pos = { x = 3, y = 0 },
     config = { insc_sacrifice_sigils = {"waterborne"}, extra = { } },
     loc_vars = function(self, info_queue, center)

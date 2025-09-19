@@ -21,6 +21,7 @@ local captive_file = {
     discovered = false,
     eternal_compat = false,
     rarity = 1,
+    order = 2,
     cost = 20,
     blueprint_compat = false,
     atlas = "po3_cards",
@@ -52,6 +53,7 @@ local captive_file = {
                 colour = G.C.TECH
             }
         end
-    end
+    end,
+
 }
 return {name = {"TechnologyJokers"}, items = {captive_file}}

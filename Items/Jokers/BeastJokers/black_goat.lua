@@ -1,7 +1,8 @@
 local black_goat = {
     object_type = "Joker",
-    name = "insc_black_goat",
+    name = "Black Goat",
     key = "black_goat",
+    insc_type = "Hooved",
     pos = { x = 0, y = 2 },
     config = { insc_sacrifice_sigils = {"sacrifice"}, extra = { has_triggered = false }},
     loc_vars = function(self, info_queue, card)

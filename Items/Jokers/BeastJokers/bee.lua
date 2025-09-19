@@ -1,7 +1,8 @@
 local bee = {
     object_type = "Joker",
-    name = "insc_bee",
+    name = "Bee",
     key = "bee",
+    insc_type = "Insect",
     pos = { x = 0, y = 1 },
     config = { insc_sacrifice_sigils = {"airborne"}, extra = { perma_bonus = 0, perma_bonus_mod = 1 } },
     loc_vars = function(self, info_queue, card)

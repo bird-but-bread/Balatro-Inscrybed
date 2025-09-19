@@ -1,7 +1,8 @@
 local alpha = {
     object_type = "Joker",
-    name = "insc_alpha",
+    name = "Alpha",
     key = "alpha",
+    insc_type = "Canine",
     pos = { x = 1, y = 2 },
     config = { insc_sacrifice_sigils = {"leader"}, extra = { mult = 10 } },
     loc_vars = function(self, info_queue, card)

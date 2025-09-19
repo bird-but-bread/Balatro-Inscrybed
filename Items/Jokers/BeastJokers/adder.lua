@@ -1,9 +1,10 @@
 local adder = {
     object_type = "Joker",
-    name = "insc_adder",
+    name = "Adder",
     key = "adder",
+    insc_type = "Reptile",
     pos = { x = 2, y = 1 },
-    config = { insc_sacrifice_sigils = {"touch_death"}, extra = { x_mult = 1.5, destroyed_jokers = 0 } },
+    config = { insc_sacrifice_sigils = {"touch_death"}, extra = { x_mult = 1.2, destroyed_jokers = 0 } },
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.x_mult, card.ability.extra.destroyed_jokers } }
     end,

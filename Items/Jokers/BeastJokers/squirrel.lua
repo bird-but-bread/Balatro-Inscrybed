@@ -1,7 +1,8 @@
 local squirrel = {
     object_type = "Joker",
-    name = "insc_squirrel",
+    name = "Squirrel",
     key = "squirrel",
+    insc_type = "None",
     pos = { x = 2, y = 0 },
     config = { extra = { } },
     loc_vars = function(self, info_queue, center)
